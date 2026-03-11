@@ -7,7 +7,7 @@ IT3030 – Programming Applications and Frameworks
 ## Dev container
 01. Press Ctrl + Shift + P (Windows/Linux) or Cmd + Shift + P (Mac).
 02. Type "Dev Containers: Reopen in Container".
-03. Hit Enter.
+03. Hit Enter.(wait untill vs code automatically download all the extentions.)
 
 
 ## Project Description
