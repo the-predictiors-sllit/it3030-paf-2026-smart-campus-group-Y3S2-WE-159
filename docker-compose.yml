@@ -32,7 +32,7 @@ services:
       - PAF_project_network
     # This command runs the script and exits immediately after
     entrypoint: /bin/bash -c "/opt/mssql-tools18/bin/sqlcmd -S database -U sa -P 'SuperSecretPassw0rd!' -C -i /init.sql"
-  
+    
 
   backend:
     build:
@@ -40,6 +40,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     volumes:
       - ./backend:/app
       - smart_campus_maven_repo:/root/.m2
@@ -58,7 +60,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 45s
+      start_period: 3600s
 
   frontend:
     build:
@@ -66,6 +68,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
