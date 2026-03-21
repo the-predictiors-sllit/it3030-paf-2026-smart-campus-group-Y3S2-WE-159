@@ -1,4 +1,40 @@
 services:
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: smart_campus_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password123
+    volumes:
+      - smart_campus_minio_data:/data
+    networks:
+      - PAF_project_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - PAF_project_network
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 admin password123;
+      /usr/bin/mc mb myminio/incident-reports;
+      /usr/bin/mc anonymous set public myminio/incident-reports;
+      exit 0;
+      "
+
   database:
     image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
@@ -50,10 +86,16 @@ services:
       # - SPRING_DATASOURCE_URL=jdbc:sqlserver://database:1433;databaseName=master;encrypt=true;trustServerCertificate=true
       - SPRING_DATASOURCE_USERNAME=sa
       - SPRING_DATASOURCE_PASSWORD=SuperSecretPassw0rd!
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=password123
+      - MINIO_BUCKET_NAME=incident-reports
     networks:
       - PAF_project_network
     depends_on:
       database:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
@@ -93,3 +135,4 @@ networks:
 volumes:
   smart_campus_mssql_data:
   smart_campus_maven_repo:
+  smart_campus_minio_data:
