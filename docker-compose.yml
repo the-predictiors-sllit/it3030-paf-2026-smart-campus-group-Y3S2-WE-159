@@ -93,10 +93,10 @@ services:
     networks:
       - PAF_project_network
     depends_on:
-      database:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -126,7 +126,8 @@ services:
       - PAF_project_network
     depends_on:
       backend:
-        condition: service_healthy # Only starts frontend after backend passes healthcheck
+        # condition: service_healthy # Only starts frontend after backend passes healthcheck
+        condition: service_started # to fix the backend crashing issue
 
 networks:
   PAF_project_network:

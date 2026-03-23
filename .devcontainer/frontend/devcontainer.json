@@ -4,6 +4,14 @@
 		"../../docker-compose.yml"
 	],
 	"service": "frontend",
+	"runServices": [
+		"database",
+		"db-init",
+		"minio",
+		"minio-init",
+		"backend",
+		"frontend"
+	],
 	// "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
 	"workspaceFolder": "/app",
 	"shutdownAction": "stopCompose",
