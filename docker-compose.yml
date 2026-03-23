@@ -101,8 +101,8 @@ services:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 3600s
+      retries: 800
+      start_period: 120s
 
   frontend:
     build:
@@ -120,14 +120,15 @@ services:
       - INTERNAL_API_URL=http://backend:8080
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - HOSTNAME=0.0.0.0
       # - WATCHPACK_POLLING=1000
       # - CHOKIDAR_USEPOLLING=true
     networks:
       - PAF_project_network
     depends_on:
       backend:
-        # condition: service_healthy # Only starts frontend after backend passes healthcheck
-        condition: service_started # to fix the backend crashing issue
+        condition: service_healthy # Only starts frontend after backend passes healthcheck
+        # condition: service_started # to fix the backend crashing issue
 
 networks:
   PAF_project_network:
