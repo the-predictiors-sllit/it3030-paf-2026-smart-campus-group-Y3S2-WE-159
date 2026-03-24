@@ -1,6 +1,0 @@
-target/
-*.jar
-*.war
-.idea/
-.vscode/
-.git/
