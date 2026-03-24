@@ -16,8 +16,10 @@
 	"workspaceFolder": "/app",
 	"shutdownAction": "stopCompose",
     "remoteUser": "root",
-	"overrideCommand": true,
-    "command": "/bin/sh -c 'npm run dev ; sleep infinity'",
+	// "overrideCommand": true,
+    // "command": "/bin/sh -c 'npm run dev ; sleep infinity'",
+	// "postStartCommand": "npm run dev",
+	"overrideCommand": false,
 	"customizations": {
 		"vscode": {
 			"extensions": [
