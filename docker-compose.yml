@@ -18,10 +18,13 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 25
+      start_period: 20s
       
   minio-init:
     image: minio/mc
+    container_name: smart_campus_minio_init
+    restart: "no"
     depends_on:
       minio:
         condition: service_healthy
@@ -37,6 +40,7 @@ services:
 
   database:
     image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: smart_campus_db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=SuperSecretPassw0rd!
@@ -51,7 +55,7 @@ services:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SuperSecretPassw0rd!' -C -Q 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 20
       start_period: 20s
 
   db-init:
@@ -74,6 +78,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: smart_campus_backend
+    restart: unless-stopped
     ports:
       - "8080:8080"
     env_file:
@@ -108,6 +114,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: smart_campus_frontend
     ports:
       - "3000:3000"
     env_file:
@@ -127,8 +134,8 @@ services:
       - PAF_project_network
     depends_on:
       backend:
-        condition: service_healthy # Only starts frontend after backend passes healthcheck
-        # condition: service_started # to fix the backend crashing issue
+        # condition: service_healthy # Only starts frontend after backend passes healthcheck
+        condition: service_started # to fix the backend crashing issue
 
 networks:
   PAF_project_network:

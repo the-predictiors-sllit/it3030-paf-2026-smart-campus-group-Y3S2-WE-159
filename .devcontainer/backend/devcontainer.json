@@ -16,8 +16,10 @@
 	"workspaceFolder": "/app",
 	"shutdownAction": "stopCompose",
     "remoteUser": "root",
-	"overrideCommand": true,
-    "command": "/bin/sh -c 'mvn spring-boot:run ; sleep infinity'",
+	// "overrideCommand": true,
+    // "command": "/bin/sh -c 'mvn spring-boot:run ; sleep infinity'",
+	// "postStartCommand": "./mvnw spring-boot:run",
+	"overrideCommand": false,
 	"customizations": {
 		"vscode": {
 			"extensions": [
