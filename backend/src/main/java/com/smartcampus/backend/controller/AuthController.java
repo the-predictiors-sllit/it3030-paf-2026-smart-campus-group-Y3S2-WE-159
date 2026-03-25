@@ -2,6 +2,7 @@ package com.smartcampus.backend.controller;
 
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import com.smartcampus.backend.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.smartcampus.backend.dto.ApiResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,7 +27,7 @@ public class AuthController {
 
     // Called by frontend after very first login (Now safely protected by Auth0 validation!)
     @PostMapping("/register")
-    public ResponseEntity<?> register(@AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<ApiResponse<Map<String, Object>>> register(@AuthenticationPrincipal Jwt jwt){
         String auth0Id = jwt.getSubject();
 
         // Try standard claims first, then custom namespace
@@ -52,20 +54,17 @@ public class AuthController {
 
         User user = userService.syncUser(auth0Id, name, email, role); //if user not in the db this add/update the user
 
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", user.getId());
+        data.put("name", user.getName());
+        data.put("email", user.getEmail());
+        data.put("role", user.getRole());
 
-        return ResponseEntity.ok(Map.of(
-            "status", "success",
-            "data", Map.of(
-                "id",    user.getId(),
-                "name",  user.getName(),
-                "email", user.getEmail(),
-                "role",  user.getRole()
-            ),
-            "_links", Map.of(
-                "self",    Map.of("href", "/api/auth/register"),
-                "profile", Map.of("href", "/api/auth/me")
-            )
-        ));
+        ApiResponse<Map<String, Object>> response = new ApiResponse<>("success", data);
+        response.addLink("self", Map.of("href", "/api/auth/register"));
+        response.addLink("profile", Map.of("href", "/api/auth/me"));
+
+        return ResponseEntity.ok(response);
     }
 
     private User.Role resolveRole(List<String> roles) {
