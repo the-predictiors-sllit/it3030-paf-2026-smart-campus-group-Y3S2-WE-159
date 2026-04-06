@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useAuth } from "@/lib/auth-context"
 import { UserRole } from "@/lib/roles"
+            import { Skeleton } from "@/components/ui/skeleton"
+import { Separator } from "@/components/ui/separator"
+
+
 
 // Navigation items with role requirements
 interface NavItem {
@@ -156,7 +160,16 @@ export const PageNavigation = () => {
 
     // Show loading state
     if (loading) {
-        return <div className="text-sm text-muted-foreground">Loading navigation...</div>
+        // return <div className="text-sm text-muted-foreground">Loading navigation...</div>
+        return(
+            <div className="hidden lg:flex lg:flex-row lg:gap-3">
+                <Skeleton className="h-5 w-[100px]" />
+                <Skeleton className="h-5 w-[100px]" />
+                <Skeleton className="h-5 w-[100px]" />
+                <Skeleton className="h-5 w-[100px]" />
+                <Skeleton className="h-5 w-[100px]" />
+            </div>
+        )
     }
 
     return (
@@ -211,9 +224,8 @@ export const PageNavigation = () => {
                                 {label}
                                 <ChevronDown
                                     size={16}
-                                    className={`transition-transform duration-200 ${
-                                        openSection === label ? "rotate-180" : ""
-                                    }`}
+                                    className={`transition-transform duration-200 ${openSection === label ? "rotate-180" : ""
+                                        }`}
                                 />
                             </button>
 
@@ -237,7 +249,14 @@ export const PageNavigation = () => {
                             )}
                         </div>
                     ))}
-
+                    <Link
+                        href="/notifications"
+                        onClick={() => setMobileOpen(false)}
+                        className="py-3 text-sm font-medium"
+                    >
+                        Notifications
+                    </Link>
+                    <Separator />
                     <Link
                         href="/docs"
                         onClick={() => setMobileOpen(false)}

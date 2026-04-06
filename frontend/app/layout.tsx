@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
 import { Auth0Provider } from '@auth0/nextjs-auth0/client';
 import { AuthProvider } from "@/lib/auth-context";
-import { NavigationBar } from "@/components/custom/NavigationBar";
+import { NavigationBar } from "@/components/custom/Main_components/NavigationBar";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -29,8 +29,11 @@ export default function RootLayout({
         <Auth0Provider>
           <AuthProvider>
             <ThemeProvider>
-              <NavigationBar/>
-              {children}
+              <NavigationBar />
+              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {children}
+              </main>
+
             </ThemeProvider>
           </AuthProvider>
         </Auth0Provider>

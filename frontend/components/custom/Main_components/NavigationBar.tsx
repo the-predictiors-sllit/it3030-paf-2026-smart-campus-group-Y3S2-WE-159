@@ -1,7 +1,10 @@
 "use client"
 
-import { UserCard_navbar } from './UserCard_navbar'
-import { PageNavigation } from './PageNavigation'
+import { UserCard_navbar } from '../Sub_components/UserCard_navbar'
+import { PageNavigation } from '../Sub_components/PageNavigation'
+import { NotificationIcon } from './NotificationIcon'
+import { DarkLight } from "@/components/custom/Sub_components/DarkLightBtn"
+
 
 export const NavigationBar = () => {
   return (
@@ -10,7 +13,12 @@ export const NavigationBar = () => {
         <div className="flex-shrink-0">Logo</div>
         <PageNavigation />
         <div className="hidden lg:block">
-          <UserCard_navbar />
+          <div className=' flex flex-row gap-2'>
+
+            <UserCard_navbar />
+            <NotificationIcon />
+            <DarkLight />
+          </div>
         </div>
       </nav>
     </div>

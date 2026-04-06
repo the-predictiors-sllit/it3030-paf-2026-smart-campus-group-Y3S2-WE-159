@@ -22,7 +22,7 @@ const page = async () => {
     <div>
 
       <h1>This is your token</h1>
-      <p>{accessToken}</p>
+      <p className='wrap-anywhere'>{accessToken}</p>
     </div>
   )
 }
