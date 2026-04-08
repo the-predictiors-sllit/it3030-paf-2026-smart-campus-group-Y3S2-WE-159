@@ -1,8 +1,7 @@
+package com.smartcampus.backend.dto;
 import java.util.List;
 
-/**
- * DTO for paginated list of resources response.
- */
+// DTO for paginated list of resources response.
 public class ListResourcesResponse {
     private List<ResourceListItem> items;
     private int total;

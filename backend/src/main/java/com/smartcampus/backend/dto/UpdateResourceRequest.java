@@ -2,10 +2,9 @@ package com.smartcampus.backend.dto;
 
 import java.util.List;
 
-/*
- * DTO for updating a resource request.
- * All fields are optional for partial updates.
- */
+
+//DTO for updating a resource request.
+//All fields are optional for partial updates.
 public class UpdateResourceRequest {
     private String name;
     private String type;

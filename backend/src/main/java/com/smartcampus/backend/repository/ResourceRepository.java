@@ -7,10 +7,9 @@ import com.smartcampus.backend.model.Resource;
 
 import java.util.List;
 
-/*
- * Repository interface for Resource entity.
- * Provides database operations using Spring Data JPA.
- */
+
+//Repository interface for Resource entity.
+//Provides database operations using Spring Data JPA.
 public interface ResourceRepository extends JpaRepository<Resource, String> {
     
     /* Find resources by type*/

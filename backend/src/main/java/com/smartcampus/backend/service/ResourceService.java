@@ -35,7 +35,7 @@ public class ResourceService {
         // Generate unique resource ID
         String resourceId = generateResourceId(request.getType());
         
-        //// Create new resource entity
+        // Create new resource entity
         Resource resource = new Resource(
             resourceId, request.getName(), request.getType(), request.getCapacity(),
             request.getLocation(), request.getStatus() != null ? request.getStatus() : "ACTIVE", request.getDescription()
@@ -234,9 +234,7 @@ public class ResourceService {
         );
     }
 
-        /**
-     * Convert Resource entity to ResourceListItem DTO with HATEOAS links.
-     */
+    /*Convert Resource entity to ResourceListItem DTO with HATEOAS links.*/
     private ResourceListItem convertToResourceListItem(Resource resource) {
         ResourceListItem item = new ResourceListItem(
             resource.getId(),

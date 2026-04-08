@@ -3,7 +3,7 @@ package com.smartcampus.backend.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/* DTO for resource response. */
+// DTO for resource response.
 public class ResourceResponse {
     private String id;
     private String name;

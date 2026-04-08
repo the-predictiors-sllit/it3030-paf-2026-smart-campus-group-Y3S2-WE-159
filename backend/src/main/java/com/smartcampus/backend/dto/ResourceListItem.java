@@ -3,7 +3,7 @@ package com.smartcampus.backend.dto;
 import java.util.HashMap;
 import java.util.Map;
 
-/* DTO for resource list item with HATEOAS links.*/
+// DTO for resource list item with HATEOAS links.
 public class ResourceListItem {
     private String id;
     private String name;

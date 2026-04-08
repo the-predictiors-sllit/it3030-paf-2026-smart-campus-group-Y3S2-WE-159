@@ -2,7 +2,7 @@ package com.smartcampus.backend.dto;
 
 import java.util.List;
 
-/* DTO for creating a resource request.*/
+//DTO for creating a resource request.
 public class CreateResourceRequest {
     private String name;
     private String type; // ROOM, LAB, EQUIPMENT

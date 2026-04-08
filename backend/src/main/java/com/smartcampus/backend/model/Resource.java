@@ -3,9 +3,8 @@ package com.smartcampus.backend.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/*
- Resource Entity - Represents a facility or asset in the campus.
-*/
+
+//Resource Entity - Represents a facility or asset in the campus.
 @Entity
 @Table(name = "Resources")
 public class Resource {

@@ -3,9 +3,8 @@ package com.smartcampus.backend.model;
 import jakarta.persistence.*;
 import java.time.LocalTime;
 
-/**
- * ResourceAvailability Entity - Represents availability windows for resources.
- */
+
+//ResourceAvailability Entity - Represents availability windows for resources.
 @Entity
 @Table(name = "ResourceAvailability")
 public class ResourceAvailability {

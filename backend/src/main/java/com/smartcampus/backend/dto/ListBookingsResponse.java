@@ -2,9 +2,7 @@ package com.smartcampus.backend.dto;
 
 import java.util.List;
 
-/**
- * DTO for paginated list of bookings response.
- */
+/* DTO for paginated list of bookings response.*/
 public class ListBookingsResponse {
     private List<BookingListItem> items;
     private int total;
