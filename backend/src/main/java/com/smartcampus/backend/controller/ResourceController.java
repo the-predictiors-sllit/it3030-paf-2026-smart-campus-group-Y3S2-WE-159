@@ -108,12 +108,23 @@ public class ResourceController {
         }
     }
 
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteResource(@PathVariable String id) {
+        try {
+            resourceService.deleteResource(id);
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     private Map<String, String> createLink(String href) {
         Map<String, String> link = new HashMap<>();
         link.put("href", href);
         return link;
     }
-
-
 
 }

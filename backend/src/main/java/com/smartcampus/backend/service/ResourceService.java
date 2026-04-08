@@ -61,7 +61,7 @@ public class ResourceService {
     }
 
     // Update an existing resource
-        public ResourceResponse updateResource(String resourceId, UpdateResourceRequest request) {
+    public ResourceResponse updateResource(String resourceId, UpdateResourceRequest request) {
         // Retrieve resource
         Resource resource = resourceRepository.findById(resourceId)
             .orElseThrow(() -> new NoSuchElementException("Resource not found: " + resourceId));
@@ -106,6 +106,19 @@ public class ResourceService {
         }
         
         return convertToResourceResponse(updatedResource);
+    }
+
+    //Delete a resource
+    public void deleteResource(String resourceId) {
+        if (!resourceRepository.existsById(resourceId)) {
+            throw new NoSuchElementException("Resource not found: " + resourceId);
+        }
+        
+        // Delete availability windows first
+        availabilityRepository.deleteByResourceId(resourceId);
+        
+        // Delete resource
+        resourceRepository.deleteById(resourceId);
     }
 
 
