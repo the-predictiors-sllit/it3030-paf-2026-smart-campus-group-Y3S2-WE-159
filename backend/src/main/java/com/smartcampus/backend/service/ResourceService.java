@@ -53,6 +53,14 @@ public class ResourceService {
         return convertToResourceResponse(savedResource);
     }
 
+    //Get a specific resource by ID
+    public ResourceResponse getResource(String resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+            .orElseThrow(() -> new NoSuchElementException("Resource not found: " + resourceId));
+        return convertToResourceResponse(resource);
+    }
+
+
     // Helper Methods for Create
     private void validateResourceRequest(CreateResourceRequest request) {
         if (request.getName() == null || request.getName().isEmpty()) throw new IllegalArgumentException("Resource name is required");
