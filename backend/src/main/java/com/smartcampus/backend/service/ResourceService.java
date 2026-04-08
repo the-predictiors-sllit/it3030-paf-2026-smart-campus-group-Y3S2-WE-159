@@ -60,6 +60,54 @@ public class ResourceService {
         return convertToResourceResponse(resource);
     }
 
+    // Update an existing resource
+        public ResourceResponse updateResource(String resourceId, UpdateResourceRequest request) {
+        // Retrieve resource
+        Resource resource = resourceRepository.findById(resourceId)
+            .orElseThrow(() -> new NoSuchElementException("Resource not found: " + resourceId));
+        
+        // Update fields if provided
+        if (request.getName() != null) {
+            resource.setName(request.getName());
+        }
+        if (request.getType() != null) {
+            if (!isValidType(request.getType())) {
+                throw new IllegalArgumentException("Invalid resource type: " + request.getType());
+            }
+            resource.setType(request.getType());
+        }
+        if (request.getCapacity() != null) {
+            resource.setCapacity(request.getCapacity());
+        }
+        if (request.getLocation() != null) {
+            resource.setLocation(request.getLocation());
+        }
+        if (request.getStatus() != null) {
+            if (!isValidStatus(request.getStatus())) {
+                throw new IllegalArgumentException("Invalid resource status: " + request.getStatus());
+            }
+            resource.setStatus(request.getStatus());
+        }
+        if (request.getDescription() != null) {
+            resource.setDescription(request.getDescription());
+        }
+        
+        // Save updated resource
+        Resource updatedResource = resourceRepository.save(resource);
+        
+        // Update availability windows if provided
+        if (request.getAvailabilityWindows() != null) {
+            // Delete existing availability
+            availabilityRepository.deleteByResourceId(resourceId);
+            // Save new availability
+            if (!request.getAvailabilityWindows().isEmpty()) {
+                saveAvailabilityWindows(resourceId, request.getAvailabilityWindows());
+            }
+        }
+        
+        return convertToResourceResponse(updatedResource);
+    }
+
 
     // Helper Methods for Create
     private void validateResourceRequest(CreateResourceRequest request) {

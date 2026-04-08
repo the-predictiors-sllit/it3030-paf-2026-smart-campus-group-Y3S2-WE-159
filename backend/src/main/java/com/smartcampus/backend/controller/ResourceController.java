@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.NoSuchElementException;
 
 /*
  * REST Controller for Resource Management API.
@@ -78,6 +77,36 @@ public class ResourceController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ResourceResponse>> updateResource(
+        @PathVariable String id,
+        @RequestBody UpdateResourceRequest request) {
+        
+        try {
+            ResourceResponse resource = resourceService.updateResource(id, request);
+            
+            // Build response with HATEOAS links
+            ApiResponse<ResourceResponse> response = new ApiResponse<>("success", resource);
+            response.addLink("self", createLink("/api/resources/" + resource.getId()));
+            response.addLink("bookings", createLink("/api/bookings?resourceId=" + resource.getId()));
+            response.addLink("tickets", createLink("/api/tickets?resourceId=" + resource.getId()));
+            
+            return ResponseEntity
+                .ok()
+                .header("Cache-Control", "no-store")
+                .body(response);
+                
+        } catch (NoSuchElementException e) {
+            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        } catch (Exception e) {
+            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 
     private Map<String, String> createLink(String href) {
         Map<String, String> link = new HashMap<>();
