@@ -3,16 +3,17 @@ package com.smartcampus.backend.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.smartcampus.backend.dto.NotificationDTO;
 import com.smartcampus.backend.model.Notification;
 import com.smartcampus.backend.repository.NotificationRepository;
 
+@Service
 public class NotificationService {
 
     @Autowired
@@ -28,13 +29,13 @@ public class NotificationService {
 
     // get unread notifications
     public List<NotificationDTO> getUnreadNotifications(String userId) {
-        List<Notification> notifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
+        List<Notification> notifications = notificationRepository.findByUserIdAndReadFalse(userId);
         return notifications.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     //get read notifications
     public List<NotificationDTO> getReadNotifications(String userId){
-        List<Notification> notifications = notificationRepository.findByUserIdAndIsReadTrue(userId);
+        List<Notification> notifications = notificationRepository.findByUserIdAndReadTrue(userId);
         return notifications.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -61,7 +62,7 @@ public class NotificationService {
 
     // Mark all notification as read
     @Transactional
-    public void markAllNotificationAsRead(String userId){
+    public void markAllNotificationsAsRead(String userId){
         notificationRepository.markAllAsRead(userId);
     }
 
@@ -72,7 +73,7 @@ public class NotificationService {
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .referenceId(notification.getReferenceId())
-                .isRead(notification.getIsRead())
+                .read(notification.getRead())
                 .createdAt(notification.getCreatedAt())
                 .build();
     }

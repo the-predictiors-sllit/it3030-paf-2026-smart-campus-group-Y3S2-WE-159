@@ -36,7 +36,7 @@ public class Notification {
 
     @Builder.Default
     @Column(name = "IsRead")
-    private Boolean isRead = false;
+    private Boolean read = false;
 
     @Column(name = "CreatedAt",nullable = false)
     private LocalDateTime createdAt;
@@ -46,8 +46,8 @@ public class Notification {
         if (createdAt == null){
             createdAt = LocalDateTime.now();
         }
-        if (isRead == null){
-            isRead = false;
+        if (read == null){
+            read = false;
         }
     }
 }

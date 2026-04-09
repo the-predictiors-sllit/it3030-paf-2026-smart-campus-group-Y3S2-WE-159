@@ -1,6 +1,10 @@
 package com.smartcampus.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotificationDTO {
+public class NotificationResponse {
     private String id;
     private String type;
     private String title;
@@ -20,4 +24,7 @@ public class NotificationDTO {
     private boolean read;
     private LocalDateTime createdAt;
 
+    @Builder.Default
+    @JsonProperty("_links")
+    private Map<String, Object> links = new HashMap<>();
 }

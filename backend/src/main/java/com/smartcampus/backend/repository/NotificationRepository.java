@@ -12,20 +12,20 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
 
     List<Notification> findByUserId(String userId); // Get notifications by for a user
 
-    List<Notification> findByUserIdAndIsReadFalse(String userId); // unread notifications
+    List<Notification> findByUserIdAndReadFalse(String userId); // unread notifications
 
-    List<Notification> findByUserIdAndIsReadTrue(String userId);// read notification
+    List<Notification> findByUserIdAndReadTrue(String userId);// read notification
 
     List<Notification> findByUserIdAndType(String userId, String type); // notifications by type
 
     // Mark one notification as read
     @Modifying
-    @Query("UPDATE Notification n SET n.isRead = true WHERE n.id = :id")
+    @Query("UPDATE Notification n SET n.read = true WHERE n.id = :id")
     void markAsRead(@Param("id") String id);
 
     // Mark all notification as read
     @Modifying
-    @Query("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId")
+    @Query("UPDATE Notification n SET n.read = true WHERE n.userId = :userId")
     void markAllAsRead(@Param("userId") String userId);
 
 }

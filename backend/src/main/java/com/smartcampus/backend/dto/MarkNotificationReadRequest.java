@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MarkNotificationReadRequest {
-    private boolean isRead;
+    private boolean read;
 
 }
