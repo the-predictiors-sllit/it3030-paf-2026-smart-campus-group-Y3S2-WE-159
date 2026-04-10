@@ -68,7 +68,7 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<NotificationResponse>> getNotification(Authentication authentication, @PathVariable String id) {
         var notification = notificationService.getNotificationById(id);
         if (notification.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>("error", null));
+            return errorResponse(HttpStatus.NOT_FOUND, "NOTIFICATION_NOT_FOUND", "Notification not found: " + id);
         }
 
         Map<String, Object> selfLink = new HashMap<>();
@@ -88,7 +88,7 @@ public class NotificationController {
         var notification = notificationService.getNotificationById(id);
 
         if (notification.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>("error", null));
+            return errorResponse(HttpStatus.NOT_FOUND, "NOTIFICATION_NOT_FOUND", "Notification not found: " + id);
         }
         notificationService.markNotificationAsRead(id);
 
@@ -146,9 +146,7 @@ public class NotificationController {
                     .body(response);
 
         } catch (Exception e) {
-            ApiResponse<NotificationResponse> errorResponse = new ApiResponse<>("error", null);
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while creating notification");
         }
     }
 
@@ -216,6 +214,12 @@ public class NotificationController {
         link.put("href", href);
         link.put("method", method);
         return link;
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> errorResponse(HttpStatus status, String code, String message) {
+        ApiResponse<T> error = new ApiResponse<>("error", null);
+        error.setError(code, message);
+        return ResponseEntity.status(status).body(error);
     }
 
 }

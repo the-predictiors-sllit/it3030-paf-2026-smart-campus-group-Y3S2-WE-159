@@ -9,7 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import MarkdownPreview from '@/components/custom/Sub_components/MarkdownPreview';
+import MarkdownPreview from '@/components/custom/MarkdownPreview';
 import { Separator } from "@/components/ui/separator"
 import { useParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton"

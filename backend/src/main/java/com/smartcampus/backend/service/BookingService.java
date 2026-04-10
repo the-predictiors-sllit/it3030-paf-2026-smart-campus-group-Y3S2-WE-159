@@ -2,12 +2,15 @@ package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.dto.*;
 import com.smartcampus.backend.model.Booking;
+import com.smartcampus.backend.model.ResourceAvailability;
 import com.smartcampus.backend.repository.BookingRepository;
+import com.smartcampus.backend.repository.ResourceAvailabilityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +25,9 @@ public class BookingService {
     
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private ResourceAvailabilityRepository resourceAvailabilityRepository;
     
     private static final DateTimeFormatter ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     
@@ -36,6 +42,9 @@ public class BookingService {
     public BookingResponse createBooking(CreateBookingRequest request, String userId) {
         // Validation
         validateBookingRequest(request);
+
+        // Ensure the requested slot falls within configured resource availability windows.
+        validateAgainstResourceAvailability(request.getResourceId(), request.getStartTime(), request.getEndTime());
         
         // Check for overlapping bookings
         List<Booking> overlapping = bookingRepository.findOverlappingBookings(
@@ -125,7 +134,7 @@ public class BookingService {
      * @param limit Number of items per page
      * @return ListBookingsResponse containing paginated bookings
      */
-    public ListBookingsResponse listBookings(String userId, String status, int page, int limit) {
+    public ListBookingsResponse listBookings(String userId, String resourceId, String status, int page, int limit) {
         int validatedPage = Math.max(page, 1);
         int validatedLimit = Math.max(limit, 1);
         String normalizedStatus = normalizeStatus(status);
@@ -133,8 +142,22 @@ public class BookingService {
         List<Booking> bookings;
         
         // Apply filters
-        if (userId != null && !userId.isEmpty() && normalizedStatus != null && !normalizedStatus.isEmpty()) {
+        if (resourceId != null && !resourceId.isEmpty() && normalizedStatus != null && !normalizedStatus.isEmpty()) {
+            bookings = bookingRepository.findByResourceIdAndStatus(resourceId, normalizedStatus);
+            if (userId != null && !userId.isEmpty()) {
+                bookings = bookings.stream()
+                    .filter(booking -> userId.equals(booking.getUserId()))
+                    .collect(Collectors.toList());
+            }
+        } else if (userId != null && !userId.isEmpty() && normalizedStatus != null && !normalizedStatus.isEmpty()) {
             bookings = bookingRepository.findByUserIdAndStatus(userId, normalizedStatus);
+        } else if (resourceId != null && !resourceId.isEmpty() && userId != null && !userId.isEmpty()) {
+            bookings = bookingRepository.findByResourceId(resourceId);
+            bookings = bookings.stream()
+                .filter(booking -> userId.equals(booking.getUserId()))
+                .collect(Collectors.toList());
+        } else if (resourceId != null && !resourceId.isEmpty()) {
+            bookings = bookingRepository.findByResourceId(resourceId);
         } else if (userId != null && !userId.isEmpty()) {
             bookings = bookingRepository.findByUserId(userId);
         } else if (normalizedStatus != null && !normalizedStatus.isEmpty()) {
@@ -300,7 +323,37 @@ public class BookingService {
         Map<String, String> resourceLink = new HashMap<>();
         resourceLink.put("href", "/api/resources/" + booking.getResourceId());
         item.addLink("resource", resourceLink);
+
+        Map<String, String> availabilityLink = new HashMap<>();
+        availabilityLink.put("href", "/api/resources/" + booking.getResourceId() + "/availability");
+        item.addLink("resource_availability", availabilityLink);
         
         return item;
+    }
+
+    private void validateAgainstResourceAvailability(String resourceId, LocalDateTime startTime, LocalDateTime endTime) {
+        if (!startTime.toLocalDate().equals(endTime.toLocalDate())) {
+            throw new BookingConflictException("Booking must start and end on the same day to match resource availability windows");
+        }
+
+        String dayOfWeek = startTime.getDayOfWeek().name();
+        List<ResourceAvailability> availabilityWindows =
+            resourceAvailabilityRepository.findByResourceIdAndDayOfWeek(resourceId, dayOfWeek);
+
+        if (availabilityWindows.isEmpty()) {
+            throw new BookingConflictException("Resource is not available on " + dayOfWeek);
+        }
+
+        LocalTime requestedStart = startTime.toLocalTime();
+        LocalTime requestedEnd = endTime.toLocalTime();
+
+        boolean fitsWindow = availabilityWindows.stream().anyMatch(window ->
+            !requestedStart.isBefore(window.getStartTime()) &&
+                !requestedEnd.isAfter(window.getEndTime())
+        );
+
+        if (!fitsWindow) {
+            throw new BookingConflictException("Requested time is outside configured resource availability windows");
+        }
     }
 }

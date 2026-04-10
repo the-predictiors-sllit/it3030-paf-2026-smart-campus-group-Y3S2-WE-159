@@ -1,4 +1,4 @@
-import { Notification } from '@/components/custom/Main_components/Notification'
+import { Notification } from '@/components/custom/NotificationAll'
 import React from 'react'
 
 

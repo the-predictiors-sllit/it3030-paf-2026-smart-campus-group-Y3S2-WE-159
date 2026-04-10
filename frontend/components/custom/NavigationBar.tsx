@@ -1,9 +1,9 @@
 "use client"
 
-import { UserCard_navbar } from '../Sub_components/UserCard_navbar'
-import { PageNavigation } from '../Sub_components/PageNavigation'
-import { NotificationIcon } from './NotificationIcon'
-import { DarkLight } from "@/components/custom/Sub_components/DarkLightBtn"
+import { UserCard_navbar } from '@/components/custom/UserCard_navbar'
+import { PageNavigation } from '@/components/custom/PageNavigation'
+import { NotificationIcon } from '@/components/custom/NotificationIcon'
+import { DarkLight } from "@/components/custom/DarkLightBtn"
 
 
 export const NavigationBar = () => {

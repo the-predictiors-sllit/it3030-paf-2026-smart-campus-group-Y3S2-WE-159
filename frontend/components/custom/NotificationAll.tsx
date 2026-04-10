@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { NotificationBox } from '../Sub_components/NotificationBox'
+import { NotificationBox } from '@/components/custom/NotificationBox'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 

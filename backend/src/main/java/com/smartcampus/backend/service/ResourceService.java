@@ -25,6 +25,7 @@ public class ResourceService {
     private ResourceAvailabilityRepository availabilityRepository;
     
     private static final DateTimeFormatter ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter RAW_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSS");
     
     /* Create a new resource. */
     
@@ -58,6 +59,21 @@ public class ResourceService {
         Resource resource = resourceRepository.findById(resourceId)
             .orElseThrow(() -> new NoSuchElementException("Resource not found: " + resourceId));
         return convertToResourceResponse(resource);
+    }
+
+    public List<ResourceResponse.AvailabilityWindow> getResourceAvailability(String resourceId) {
+        if (!resourceRepository.existsById(resourceId)) {
+            throw new NoSuchElementException("Resource not found: " + resourceId);
+        }
+
+        return availabilityRepository.findByResourceId(resourceId)
+            .stream()
+            .map(a -> new ResourceResponse.AvailabilityWindow(
+                a.getDayOfWeek(),
+                formatRawTime(a.getStartTime()),
+                formatRawTime(a.getEndTime())
+            ))
+            .collect(Collectors.toList());
     }
 
     // Update an existing resource
@@ -217,8 +233,8 @@ public class ResourceService {
         List<ResourceResponse.AvailabilityWindow> windows = availabilities.stream()
             .map(a -> new ResourceResponse.AvailabilityWindow(
                 a.getDayOfWeek(), 
-                a.getStartTime().toString(),
-                a.getEndTime().toString()
+                formatRawTime(a.getStartTime()),
+                formatRawTime(a.getEndTime())
             ))
             .collect(Collectors.toList());
             
@@ -251,6 +267,10 @@ public class ResourceService {
         item.addLink("self", selfLink);
         
         return item;
+    }
+
+    private String formatRawTime(LocalTime time) {
+        return time.format(RAW_TIME_FORMATTER);
     }
 
 }

@@ -1,4 +1,4 @@
-import { MarkdownEditor } from '@/components/custom/Main_components/MarkdownEditor'
+import { MarkdownEditor } from '@/components/custom/MarkdownEditor'
 import React from 'react'
 
 

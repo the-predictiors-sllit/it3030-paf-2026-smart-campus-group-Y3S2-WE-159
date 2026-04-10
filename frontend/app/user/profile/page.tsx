@@ -1,4 +1,4 @@
-import { UserProfileCard } from '@/components/custom/Main_components/UserProfileCard'
+import { UserProfileCard } from '@/components/custom/UserProfileCard'
 import React from 'react'
 
 

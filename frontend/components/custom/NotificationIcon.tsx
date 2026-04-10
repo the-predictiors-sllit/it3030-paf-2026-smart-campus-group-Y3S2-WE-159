@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Bell } from 'lucide-react'
 import React from 'react'
-import { Notification } from './Notification'
+import { Notification } from '@/components/custom/NotificationAll'
 import { useRouter } from 'next/navigation'
 
 

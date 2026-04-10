@@ -79,11 +79,9 @@ public class ResourceController {
                 .body(response);
                 
         } catch (IllegalArgumentException e) {
-            ApiResponse<ListResourcesResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            return errorResponse(HttpStatus.BAD_REQUEST, "RESOURCE_QUERY_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<ListResourcesResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while listing resources");
         }
     }
 
@@ -95,6 +93,7 @@ public class ResourceController {
             
             ApiResponse<ResourceResponse> response = new ApiResponse<>("success", resource);
             response.addLink("self", createLink("/api/resources/" + resource.getId()));
+            response.addLink("availability", createLink("/api/resources/" + resource.getId() + "/availability"));
             response.addLink("bookings", createLink("/api/bookings?resourceId=" + resource.getId()));
             response.addLink("tickets", createLink("/api/tickets?resourceId=" + resource.getId()));
             
@@ -105,9 +104,9 @@ public class ResourceController {
                 .body(response);
                 
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>("error", null));
+            return errorResponse(HttpStatus.BAD_REQUEST, "RESOURCE_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>("error", null));
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while creating resource");
         }
     }
 
@@ -119,6 +118,7 @@ public class ResourceController {
             // Build response with HATEOAS links
             ApiResponse<ResourceResponse> response = new ApiResponse<>("success", resource);
             response.addLink("self", createLink("/api/resources/" + resource.getId()));
+            response.addLink("availability", createLink("/api/resources/" + resource.getId() + "/availability"));
             response.addLink("bookings", createLink("/api/bookings?resourceId=" + resource.getId()));
             response.addLink("tickets", createLink("/api/tickets?resourceId=" + resource.getId()));
             
@@ -128,11 +128,33 @@ public class ResourceController {
                 .body(response);
                 
         } catch (NoSuchElementException e) {
-            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return errorResponse(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while fetching resource");
+        }
+    }
+
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getResourceAvailability(@PathVariable String id) {
+        try {
+            List<ResourceResponse.AvailabilityWindow> windows = resourceService.getResourceAvailability(id);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("resourceId", id);
+            data.put("items", windows);
+
+            ApiResponse<Map<String, Object>> response = new ApiResponse<>("success", data);
+            response.addLink("self", createLink("/api/resources/" + id + "/availability"));
+            response.addLink("resource", createLink("/api/resources/" + id));
+
+            return ResponseEntity
+                .ok()
+                .header("Cache-Control", "public, max-age=300")
+                .body(response);
+        } catch (NoSuchElementException e) {
+            return errorResponse(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", e.getMessage());
+        } catch (Exception e) {
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while fetching resource availability");
         }
     }
 
@@ -147,6 +169,7 @@ public class ResourceController {
             // Build response with HATEOAS links
             ApiResponse<ResourceResponse> response = new ApiResponse<>("success", resource);
             response.addLink("self", createLink("/api/resources/" + resource.getId()));
+            response.addLink("availability", createLink("/api/resources/" + resource.getId() + "/availability"));
             response.addLink("bookings", createLink("/api/bookings?resourceId=" + resource.getId()));
             response.addLink("tickets", createLink("/api/tickets?resourceId=" + resource.getId()));
             
@@ -156,14 +179,11 @@ public class ResourceController {
                 .body(response);
                 
         } catch (NoSuchElementException e) {
-            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return errorResponse(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", e.getMessage());
         } catch (IllegalArgumentException e) {
-            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            return errorResponse(HttpStatus.BAD_REQUEST, "RESOURCE_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<ResourceResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while updating resource");
         }
     }
 
@@ -214,6 +234,12 @@ public class ResourceController {
         sb.append("page=").append(page).append("&limit=").append(limit);
         
         return sb.toString();
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> errorResponse(HttpStatus status, String code, String message) {
+        ApiResponse<T> error = new ApiResponse<>("error", null);
+        error.setError(code, message);
+        return ResponseEntity.status(status).body(error);
     }
 }
 
