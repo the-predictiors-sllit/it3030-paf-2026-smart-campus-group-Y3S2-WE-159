@@ -54,6 +54,7 @@ public class BookingController {
             ApiResponse<BookingResponse> response = new ApiResponse<>("success", booking);
             response.addLink("self", createLink("/api/bookings/" + booking.getId()));
             response.addLink("resource", createLink("/api/resources/" + booking.getResourceId()));
+            response.addLink("resource_availability", createLink("/api/resources/" + booking.getResourceId() + "/availability"));
             response.addLink("cancel", createLinkWithMethod("/api/bookings/" + booking.getId(), "DELETE"));
             
             return ResponseEntity
@@ -63,11 +64,11 @@ public class BookingController {
                 .body(response);
                 
         } catch (IllegalArgumentException e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            return errorResponse(HttpStatus.BAD_REQUEST, "BOOKING_VALIDATION_ERROR", e.getMessage());
+        } catch (BookingConflictException e) {
+            return errorResponse(HttpStatus.CONFLICT, "BOOKING_CONFLICT", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while creating booking");
         }
     }
     
@@ -87,29 +88,30 @@ public class BookingController {
     @GetMapping
     public ResponseEntity<ApiResponse<ListBookingsResponse>> listBookings(
         @RequestParam(value = "status", required = false) String status,
+        @RequestParam(value = "resourceId", required = false) String resourceId,
         @RequestParam(value = "userId", required = false) String userId,
         @RequestParam(value = "page", defaultValue = "1") int page,
         @RequestParam(value = "limit", defaultValue = "10") int limit) {
         
         try {
-            ListBookingsResponse bookings = bookingService.listBookings(userId, status, page, limit);
+            ListBookingsResponse bookings = bookingService.listBookings(userId, resourceId, status, page, limit);
             
             // Build response with HATEOAS links
             ApiResponse<ListBookingsResponse> response = new ApiResponse<>("success", bookings);
             
             // Self link
-            String queryString = buildQueryString(status, userId, bookings.getPage(), limit);
+            String queryString = buildQueryString(status, resourceId, userId, bookings.getPage(), limit);
             response.addLink("self", createLink("/api/bookings" + queryString));
             
             // Next link (if not on last page)
             if (bookings.getTotalPages() > 0 && bookings.getPage() < bookings.getTotalPages()) {
-                String nextQuery = buildQueryString(status, userId, bookings.getPage() + 1, limit);
+                String nextQuery = buildQueryString(status, resourceId, userId, bookings.getPage() + 1, limit);
                 response.addLink("next", createLink("/api/bookings" + nextQuery));
             }
             
             // Previous link (if not on first page)
             if (bookings.getPage() > 1) {
-                String prevQuery = buildQueryString(status, userId, bookings.getPage() - 1, limit);
+                String prevQuery = buildQueryString(status, resourceId, userId, bookings.getPage() - 1, limit);
                 response.addLink("prev", createLink("/api/bookings" + prevQuery));
             }
             
@@ -119,11 +121,9 @@ public class BookingController {
                 .body(response);
                 
         } catch (IllegalArgumentException e) {
-            ApiResponse<ListBookingsResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            return errorResponse(HttpStatus.BAD_REQUEST, "BOOKING_QUERY_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<ListBookingsResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while listing bookings");
         }
     }
     
@@ -144,6 +144,7 @@ public class BookingController {
             ApiResponse<BookingResponse> response = new ApiResponse<>("success", booking);
             response.addLink("self", createLink("/api/bookings/" + booking.getId()));
             response.addLink("resource", createLink("/api/resources/" + booking.getResourceId()));
+            response.addLink("resource_availability", createLink("/api/resources/" + booking.getResourceId() + "/availability"));
             response.addLink("cancel", createLinkWithMethod("/api/bookings/" + booking.getId(), "DELETE"));
             
             return ResponseEntity
@@ -152,11 +153,9 @@ public class BookingController {
                 .body(response);
                 
         } catch (NoSuchElementException e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return errorResponse(HttpStatus.NOT_FOUND, "BOOKING_NOT_FOUND", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while fetching booking");
         }
     }
     
@@ -187,6 +186,7 @@ public class BookingController {
             ApiResponse<BookingResponse> response = new ApiResponse<>("success", booking);
             response.addLink("self", createLink("/api/bookings/" + booking.getId()));
             response.addLink("resource", createLink("/api/resources/" + booking.getResourceId()));
+            response.addLink("resource_availability", createLink("/api/resources/" + booking.getResourceId() + "/availability"));
             
             return ResponseEntity
                 .ok()
@@ -194,17 +194,13 @@ public class BookingController {
                 .body(response);
                 
         } catch (NoSuchElementException e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return errorResponse(HttpStatus.NOT_FOUND, "BOOKING_NOT_FOUND", e.getMessage());
         } catch (IllegalArgumentException e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            return errorResponse(HttpStatus.BAD_REQUEST, "BOOKING_VALIDATION_ERROR", e.getMessage());
         } catch (BookingConflictException e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+            return errorResponse(HttpStatus.CONFLICT, "BOOKING_CONFLICT", e.getMessage());
         } catch (Exception e) {
-            ApiResponse<BookingResponse> error = new ApiResponse<>("error", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while updating booking status");
         }
     }
     
@@ -252,12 +248,18 @@ public class BookingController {
     /**
      * Helper to build query string for pagination.
      */
-    private String buildQueryString(String status, String userId, int page, int limit) {
+    private String buildQueryString(String status, String resourceId, String userId, int page, int limit) {
         StringBuilder sb = new StringBuilder("?");
         boolean first = true;
         
         if (status != null && !status.isEmpty()) {
             sb.append("status=").append(status);
+            first = false;
+        }
+
+        if (resourceId != null && !resourceId.isEmpty()) {
+            if (!first) sb.append("&");
+            sb.append("resourceId=").append(resourceId);
             first = false;
         }
         
@@ -271,5 +273,11 @@ public class BookingController {
         sb.append("page=").append(page).append("&limit=").append(limit);
         
         return sb.toString();
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> errorResponse(HttpStatus status, String code, String message) {
+        ApiResponse<T> error = new ApiResponse<>("error", null);
+        error.setError(code, message);
+        return ResponseEntity.status(status).body(error);
     }
 }

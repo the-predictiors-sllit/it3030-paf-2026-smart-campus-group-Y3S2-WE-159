@@ -10,6 +10,9 @@ public interface ResourceAvailabilityRepository extends JpaRepository<ResourceAv
     
     // Find availability windows for a specific resource
     List<ResourceAvailability> findByResourceId(String resourceId);
+
+    // Find availability windows for a specific resource and day
+    List<ResourceAvailability> findByResourceIdAndDayOfWeek(String resourceId, String dayOfWeek);
     
     
     // Delete all availability windows for a specific resource

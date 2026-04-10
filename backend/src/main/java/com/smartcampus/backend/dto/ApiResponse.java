@@ -12,19 +12,51 @@ import java.util.Map;
 public class ApiResponse<T> {
     private String status;
     private T data;
+    private ErrorDetail error;
     @JsonProperty("_links")
     private Map<String, Object> _links;
 
     public ApiResponse(String status, T data) {
         this.status = status;
         this.data = data;
+        this.error = null;
         this._links = new HashMap<>();
     }
 
     public ApiResponse(String status, T data, Map<String, Object> links) {
         this.status = status;
         this.data = data;
+        this.error = null;
         this._links = links;
+    }
+
+    public static class ErrorDetail {
+        private String code;
+        private String message;
+
+        public ErrorDetail() {
+        }
+
+        public ErrorDetail(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 
     public String getStatus() {
@@ -43,6 +75,14 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
+    public ErrorDetail getError() {
+        return error;
+    }
+
+    public void setError(ErrorDetail error) {
+        this.error = error;
+    }
+
     public Map<String, Object> get_links() {
         return _links;
     }
@@ -53,5 +93,9 @@ public class ApiResponse<T> {
 
     public void addLink(String rel, Map<String, String> link) {
         this._links.put(rel, link);
+    }
+
+    public void setError(String code, String message) {
+        this.error = new ErrorDetail(code, message);
     }
 }
