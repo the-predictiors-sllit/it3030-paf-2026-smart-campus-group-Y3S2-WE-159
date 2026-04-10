@@ -81,7 +81,7 @@ services:
     container_name: smart_campus_backend
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8118:8080"
     env_file:
       - .env
     volumes:
@@ -117,7 +117,7 @@ services:
       dockerfile: Dockerfile
     container_name: smart_campus_frontend
     ports:
-      - "3000:3000"
+      - "3113:3000"
     env_file:
       - .env
     volumes:
