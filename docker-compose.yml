@@ -88,7 +88,7 @@ services:
       - ./backend:/app
       - smart_campus_maven_repo:/root/.m2
     environment:
-      - DEBUG=true
+      # - DEBUG=true
       - SPRING_DATASOURCE_URL=jdbc:sqlserver://database:1433;databaseName=smart_campus_v1;encrypt=true;trustServerCertificate=true
       # - SPRING_DATASOURCE_URL=jdbc:sqlserver://database:1433;databaseName=master;encrypt=true;trustServerCertificate=true
       - SPRING_DATASOURCE_USERNAME=sa
@@ -117,15 +117,15 @@ services:
       dockerfile: Dockerfile
     container_name: smart_campus_frontend
     ports:
-      - "3113:3000"
+      - "3000:3000"
     env_file:
       - .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - DEBUG=true
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      # - DEBUG=true
+      - NEXT_PUBLIC_API_URL=http://localhost:8118
       - INTERNAL_API_URL=http://backend:8080
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true

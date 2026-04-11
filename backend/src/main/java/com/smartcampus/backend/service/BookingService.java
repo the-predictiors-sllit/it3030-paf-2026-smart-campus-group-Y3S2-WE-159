@@ -230,8 +230,8 @@ public class BookingService {
             throw new IllegalArgumentException("End time is required");
         }
         
-        if (request.getStartTime().isAfter(request.getEndTime())) {
-            throw new IllegalArgumentException("Start time must be before end time");
+        if (!request.getStartTime().isBefore(request.getEndTime())) {
+            throw new IllegalArgumentException("End time must be after start time");
         }
         
         if (request.getStartTime().isBefore(LocalDateTime.now())) {

@@ -217,6 +217,16 @@ public class ResourceService {
         for (CreateResourceRequest.AvailabilityWindow window : windows) {
             LocalTime startTime = LocalTime.parse(window.getStartTime());
             LocalTime endTime = LocalTime.parse(window.getEndTime());
+
+            if (availabilityRepository.existsByResourceIdAndDayOfWeekAndStartTimeAndEndTime(
+                resourceId,
+                window.getDay(),
+                startTime,
+                endTime
+            )) {
+                continue;
+            }
+
             ResourceAvailability availability = new ResourceAvailability(
                 resourceId, 
                 window.getDay(), 

@@ -6,6 +6,8 @@ import com.smartcampus.backend.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -15,6 +17,7 @@ import java.util.*;
  * Implements Module B endpoints:
  * - POST /api/bookings - Create booking
  * - GET /api/bookings - List bookings with filtering
+ * - GET /api/bookings/me - List current user's bookings (derived from JWT)
  * - GET /api/bookings/{id} - Get booking details
  * - PATCH /api/bookings/{id}/status - Update booking status
  * 
@@ -40,12 +43,16 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
         @RequestBody CreateBookingRequest request,
-        @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        Authentication authentication) {
         
         try {
-            // For now, use a default user ID (when auth is added, extract from JWT token)
-            if (userId == null || userId.isEmpty()) {
-                userId = "usr_1001"; // Default user for testing
+            String userId = extractUserId(authentication);
+            if (userId == null || userId.isBlank()) {
+                return errorResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "UNAUTHORIZED",
+                    "Missing or invalid bearer token: user id (sub) claim not found"
+                );
             }
             
             BookingResponse booking = bookingService.createBooking(request, userId);
@@ -124,6 +131,60 @@ public class BookingController {
             return errorResponse(HttpStatus.BAD_REQUEST, "BOOKING_QUERY_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while listing bookings");
+        }
+    }
+
+    /**
+     * GET /api/bookings/me
+     * List bookings for the currently authenticated user.
+     *
+     * The user ID is always extracted from the JWT `sub` claim,
+     * so clients cannot access other users' bookings via query parameters.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<ListBookingsResponse>> listMyBookings(
+        @RequestParam(value = "status", required = false) String status,
+        @RequestParam(value = "resourceId", required = false) String resourceId,
+        @RequestParam(value = "page", defaultValue = "1") int page,
+        @RequestParam(value = "limit", defaultValue = "10") int limit,
+        Authentication authentication) {
+
+        try {
+            String userId = extractUserId(authentication);
+            if (userId == null || userId.isBlank()) {
+                return errorResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "UNAUTHORIZED",
+                    "Missing or invalid bearer token: user id (sub) claim not found"
+                );
+            }
+
+            ListBookingsResponse bookings = bookingService.listBookings(userId, resourceId, status, page, limit);
+
+            ApiResponse<ListBookingsResponse> response = new ApiResponse<>("success", bookings);
+
+            String queryString = buildMyBookingsQueryString(status, resourceId, bookings.getPage(), limit);
+            response.addLink("self", createLink("/api/bookings/me" + queryString));
+
+            if (bookings.getTotalPages() > 0 && bookings.getPage() < bookings.getTotalPages()) {
+                String nextQuery = buildMyBookingsQueryString(status, resourceId, bookings.getPage() + 1, limit);
+                response.addLink("next", createLink("/api/bookings/me" + nextQuery));
+            }
+
+            if (bookings.getPage() > 1) {
+                String prevQuery = buildMyBookingsQueryString(status, resourceId, bookings.getPage() - 1, limit);
+                response.addLink("prev", createLink("/api/bookings/me" + prevQuery));
+            }
+
+            return ResponseEntity
+                .ok()
+                .header("Cache-Control", "no-store")
+                .body(response);
+
+        } catch (IllegalArgumentException e) {
+            return errorResponse(HttpStatus.BAD_REQUEST, "BOOKING_QUERY_VALIDATION_ERROR", e.getMessage());
+        } catch (Exception e) {
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while listing user bookings");
         }
     }
     
@@ -273,6 +334,24 @@ public class BookingController {
         sb.append("page=").append(page).append("&limit=").append(limit);
         
         return sb.toString();
+    }
+
+    /**
+     * Build query string for /api/bookings/me links.
+     */
+    private String buildMyBookingsQueryString(String status, String resourceId, int page, int limit) {
+        return buildQueryString(status, resourceId, null, page, limit);
+    }
+
+    /**
+     * Extract authenticated user ID from JWT subject claim.
+     */
+    private String extractUserId(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            return jwt.getClaimAsString("sub");
+        }
+        return null;
     }
 
     private <T> ResponseEntity<ApiResponse<T>> errorResponse(HttpStatus status, String code, String message) {

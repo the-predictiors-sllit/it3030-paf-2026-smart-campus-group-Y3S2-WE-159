@@ -43,7 +43,8 @@ CREATE TABLE ResourceAvailability (
     ResourceId VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES Resources(Id),
     DayOfWeek VARCHAR(10) NOT NULL CHECK (DayOfWeek IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY')),
     StartTime TIME NOT NULL,
-    EndTime TIME NOT NULL
+    EndTime TIME NOT NULL,
+    CONSTRAINT UQ_ResourceAvailability UNIQUE (ResourceId, DayOfWeek, StartTime, EndTime)
 );
 
 -- ==========================================

@@ -57,14 +57,14 @@ const UserManagement: NavItem[] = [
 
 const Facilities_Assets: NavItem[] = [
     {
-        title: "Facilities Catalogue",
-        href: "/facilities/catalogue",
-        description: "Browse all facilities",
+        title: "Resources Catalogue",
+        href: "/resources",
+        description: "Browse All Resources",
         // roles undefined = all authenticated users
     },
     {
         title: "Resource Management",
-        href: "/admin/resources",
+        href: "/resources/admin",
         description: "Manage facilities and resources",
         roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
     },
@@ -72,14 +72,8 @@ const Facilities_Assets: NavItem[] = [
 
 const Booking_resource: NavItem[] = [
     {
-        title: "Book Resources",
-        href: "/booking/create",
-        description: "Create a new booking",
-        // roles undefined = all authenticated users
-    },
-    {
         title: "My Bookings",
-        href: "/booking/my-bookings",
+        href: "/booking",
         description: "View your bookings",
         // roles undefined = all authenticated users
     },
@@ -87,16 +81,9 @@ const Booking_resource: NavItem[] = [
 
 const Incident: NavItem[] = [
     {
-        title: "Create a Ticket",
-        href: "/tickets/create",
+        title: "My Tickets",
+        href: "/tickets",
         description: "Report an incident or issue",
-        // roles undefined = all authenticated users
-    },
-    {
-        title: "View Tickets",
-        href: "/tickets/my-tickets",
-        description: "View your submitted tickets",
-        // roles undefined = all authenticated users
     },
     {
         title: "Manage Tickets",
