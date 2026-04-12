@@ -1,11 +1,14 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.config.SecurityContextUtil;
 import com.smartcampus.backend.dto.ApiResponse;
 import com.smartcampus.backend.dto.FileUploadResponse;
 import com.smartcampus.backend.service.MinioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.util.UriUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,13 +61,18 @@ public class FileUploadController {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<FileUploadResponse>> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            @RequestParam(value = "folder", required = false, defaultValue = "ticket") String folder,
+            Authentication authentication) {
 
         try {
-            // Default user for testing (replaced by JWT extraction when auth is wired up)
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
-                userId = "usr_1001";
+                return errorResponse(HttpStatus.UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Missing or invalid bearer token: user id (sub) claim not found");
             }
+
+            MinioService.StorageFolder storageFolder = resolveStorageFolder(folder);
 
             // ── Validation ────────────────────────────────────────────────────
 
@@ -90,7 +98,7 @@ public class FileUploadController {
 
             // ── Upload to Minio ───────────────────────────────────────────────
 
-            String generatedFileName = minioService.uploadFile(userId, file);
+            String generatedFileName = minioService.uploadFile(userId, file, storageFolder);
 
             FileUploadResponse uploadResponse = new FileUploadResponse(
                     generatedFileName,
@@ -102,18 +110,28 @@ public class FileUploadController {
             // Build API response with HATEOAS links
             ApiResponse<FileUploadResponse> response =
                     new ApiResponse<>("success", uploadResponse);
-            response.addLink("self",   createLink("/api/upload/" + generatedFileName));
-            response.addLink("delete", createLinkWithMethod("/api/upload/" + generatedFileName, "DELETE"));
+                String encodedFileName = UriUtils.encode(generatedFileName, java.nio.charset.StandardCharsets.UTF_8);
+                response.addLink("self", createLink("/api/upload?fileName=" + encodedFileName));
+                response.addLink("delete", createLinkWithMethod("/api/upload?fileName=" + encodedFileName, "DELETE"));
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .header("Location", "/api/upload/" + generatedFileName)
+                    .header("Location", "/api/upload?fileName=" + encodedFileName)
                     .body(response);
 
+        } catch (IllegalArgumentException e) {
+            return errorResponse(HttpStatus.BAD_REQUEST,
+                    "UPLOAD_VALIDATION_ERROR", e.getMessage());
         } catch (Exception e) {
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                     "UPLOAD_FAILED", "Failed to upload file: " + e.getMessage());
         }
+    }
+
+    @DeleteMapping(params = "fileName")
+    public ResponseEntity<ApiResponse<Map<String, String>>> deleteFileByQuery(
+            @RequestParam("fileName") String fileName) {
+        return deleteFileInternal(fileName);
     }
 
     // ── DELETE /api/upload/{fileName} ─────────────────────────────────────────
@@ -132,6 +150,11 @@ public class FileUploadController {
     @DeleteMapping("/{fileName}")
     public ResponseEntity<ApiResponse<Map<String, String>>> deleteFile(
             @PathVariable String fileName) {
+
+        return deleteFileInternal(fileName);
+    }
+
+    private ResponseEntity<ApiResponse<Map<String, String>>> deleteFileInternal(String fileName) {
 
         try {
             if (fileName == null || fileName.isBlank()) {
@@ -175,5 +198,20 @@ public class FileUploadController {
         ApiResponse<T> error = new ApiResponse<>("error", null);
         error.setError(code, message);
         return ResponseEntity.status(status).body(error);
+    }
+
+    private MinioService.StorageFolder resolveStorageFolder(String folder) {
+        if (folder == null || folder.isBlank()) {
+            return MinioService.StorageFolder.TICKET;
+        }
+
+        if ("resource".equalsIgnoreCase(folder)) {
+            return MinioService.StorageFolder.RESOURCE;
+        }
+        if ("ticket".equalsIgnoreCase(folder)) {
+            return MinioService.StorageFolder.TICKET;
+        }
+
+        throw new IllegalArgumentException("Invalid folder. Use 'ticket' or 'resource'");
     }
 }

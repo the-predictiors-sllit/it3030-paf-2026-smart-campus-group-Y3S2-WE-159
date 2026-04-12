@@ -1,13 +1,13 @@
 package com.smartcampus.backend.controller;
 
 import com.smartcampus.backend.dto.*;
+import com.smartcampus.backend.config.SecurityContextUtil;
 import com.smartcampus.backend.service.BookingConflictException;
 import com.smartcampus.backend.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class BookingController {
         Authentication authentication) {
         
         try {
-            String userId = extractUserId(authentication);
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
                 return errorResponse(
                     HttpStatus.UNAUTHORIZED,
@@ -150,7 +150,7 @@ public class BookingController {
         Authentication authentication) {
 
         try {
-            String userId = extractUserId(authentication);
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
                 return errorResponse(
                     HttpStatus.UNAUTHORIZED,
@@ -197,9 +197,15 @@ public class BookingController {
      * - 404 Not Found: Booking not found
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookingResponse>> getBooking(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<BookingResponse>> getBooking(@PathVariable String id, Authentication authentication) {
         try {
             BookingResponse booking = bookingService.getBooking(id);
+
+            String userId = SecurityContextUtil.getUserId(authentication);
+            boolean isAdmin = SecurityContextUtil.hasRole(authentication, "ADMIN");
+            if (!isAdmin && (userId == null || !userId.equals(booking.getUserId()))) {
+                return errorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", "You can only access your own bookings");
+            }
             
             // Build response with HATEOAS links
             ApiResponse<BookingResponse> response = new ApiResponse<>("success", booking);
@@ -341,17 +347,6 @@ public class BookingController {
      */
     private String buildMyBookingsQueryString(String status, String resourceId, int page, int limit) {
         return buildQueryString(status, resourceId, null, page, limit);
-    }
-
-    /**
-     * Extract authenticated user ID from JWT subject claim.
-     */
-    private String extractUserId(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
-            Jwt jwt = (Jwt) authentication.getPrincipal();
-            return jwt.getClaimAsString("sub");
-        }
-        return null;
     }
 
     private <T> ResponseEntity<ApiResponse<T>> errorResponse(HttpStatus status, String code, String message) {

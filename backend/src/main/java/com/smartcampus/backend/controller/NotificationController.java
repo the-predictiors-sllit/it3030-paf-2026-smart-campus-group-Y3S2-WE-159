@@ -1,5 +1,6 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.config.SecurityContextUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.smartcampus.backend.dto.ApiResponse;
 import com.smartcampus.backend.dto.NotificationDTO;
@@ -31,7 +31,10 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<ApiResponse<Map<String, Object>>> getNotifications(Authentication authentication,
             @RequestParam(required = false) Boolean read) {
-        String userId = extractUserId(authentication);
+        String userId = SecurityContextUtil.getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return errorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Missing or invalid bearer token");
+        }
         List<NotificationDTO> notifications;
 
         if (read != null && !read) {
@@ -66,7 +69,12 @@ public class NotificationController {
     // GET api/notifications/{id}
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<NotificationResponse>> getNotification(Authentication authentication, @PathVariable String id) {
-        var notification = notificationService.getNotificationById(id);
+        String userId = SecurityContextUtil.getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return errorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Missing or invalid bearer token");
+        }
+
+        var notification = notificationService.getNotificationByIdForUser(id, userId);
         if (notification.isEmpty()) {
             return errorResponse(HttpStatus.NOT_FOUND, "NOTIFICATION_NOT_FOUND", "Notification not found: " + id);
         }
@@ -85,12 +93,17 @@ public class NotificationController {
     // Patch /api/notification/{id}/read
     @PatchMapping("/{id}/read")
     public ResponseEntity<ApiResponse<NotificationResponse>> markNotificationAsRead(Authentication authentication, @PathVariable String id) {
-        var notification = notificationService.getNotificationById(id);
+        String userId = SecurityContextUtil.getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return errorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Missing or invalid bearer token");
+        }
+
+        var notification = notificationService.getNotificationByIdForUser(id, userId);
 
         if (notification.isEmpty()) {
             return errorResponse(HttpStatus.NOT_FOUND, "NOTIFICATION_NOT_FOUND", "Notification not found: " + id);
         }
-        notificationService.markNotificationAsRead(id);
+        notificationService.markNotificationAsReadForUser(id, userId);
 
         Map<String, Object> selfLink = new HashMap<>();
         selfLink.put("href", "/api/notifications/" + id);
@@ -110,7 +123,10 @@ public class NotificationController {
 
     @PatchMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(Authentication authentication) {
-        String userId = extractUserId(authentication);
+        String userId = SecurityContextUtil.getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return errorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Missing or invalid bearer token");
+        }
         notificationService.markAllNotificationsAsRead(userId);
 
         Map<String, Object> selfLink = new HashMap<>();
@@ -148,15 +164,6 @@ public class NotificationController {
         } catch (Exception e) {
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected error occurred while creating notification");
         }
-    }
-
-    // Extract userId from jwt
-    private String extractUserId(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
-            Jwt jwt = (Jwt) authentication.getPrincipal();
-            return jwt.getClaimAsString("sub");
-        }
-        return null;
     }
 
     private NotificationResponse toNotificationResponse(NotificationDTO dto) {

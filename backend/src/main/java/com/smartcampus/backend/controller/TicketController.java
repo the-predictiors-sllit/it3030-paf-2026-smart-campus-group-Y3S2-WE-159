@@ -1,10 +1,12 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.config.SecurityContextUtil;
 import com.smartcampus.backend.dto.*;
 import com.smartcampus.backend.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -66,11 +68,14 @@ public class TicketController {
     @PostMapping
     public ResponseEntity<ApiResponse<TicketResponse>> createTicket(
             @RequestBody CreateTicketRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            Authentication authentication) {
 
         try {
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
-                userId = "usr_1001"; // Default for testing; replaced by JWT when auth is wired
+                return errorResponse(HttpStatus.UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Missing or invalid bearer token: user id (sub) claim not found");
             }
 
             TicketResponse ticket = ticketService.createTicket(request, userId);
@@ -163,6 +168,54 @@ public class TicketController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<ListTicketsResponse>> listMyTickets(
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "assignedTo", required = false) String assignedTo,
+            @RequestParam(value = "resourceId", required = false) String resourceId,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            Authentication authentication) {
+
+        try {
+            String userId = SecurityContextUtil.getUserId(authentication);
+            if (userId == null || userId.isBlank()) {
+                return errorResponse(HttpStatus.UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Missing or invalid bearer token: user id (sub) claim not found");
+            }
+
+            ListTicketsResponse tickets = ticketService.listTickets(
+                    userId, assignedTo, resourceId, status, page, limit);
+
+            ApiResponse<ListTicketsResponse> response = new ApiResponse<>("success", tickets);
+
+            String queryString = buildMyQueryString(status, assignedTo, resourceId, tickets.getPage(), limit);
+            response.addLink("self", createLink("/api/tickets/me" + queryString));
+
+            if (tickets.getTotalPages() > 0 && tickets.getPage() < tickets.getTotalPages()) {
+                String nextQuery = buildMyQueryString(status, assignedTo, resourceId, tickets.getPage() + 1, limit);
+                response.addLink("next", createLink("/api/tickets/me" + nextQuery));
+            }
+
+            if (tickets.getPage() > 1) {
+                String prevQuery = buildMyQueryString(status, assignedTo, resourceId, tickets.getPage() - 1, limit);
+                response.addLink("prev", createLink("/api/tickets/me" + prevQuery));
+            }
+
+            return ResponseEntity.ok()
+                    .header("Cache-Control", "no-store")
+                    .body(response);
+
+        } catch (IllegalArgumentException e) {
+            return errorResponse(HttpStatus.BAD_REQUEST,
+                    "TICKET_QUERY_VALIDATION_ERROR", e.getMessage());
+        } catch (Exception e) {
+            return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "INTERNAL_ERROR", "Unexpected error while listing user tickets");
+        }
+    }
+
     // ── GET /api/tickets/{id} ─────────────────────────────────────────────────
 
     /**
@@ -175,10 +228,15 @@ public class TicketController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TicketResponse>> getTicket(
-            @PathVariable String id) {
+            @PathVariable String id,
+            Authentication authentication) {
 
         try {
             TicketResponse ticket = ticketService.getTicket(id);
+            ResponseEntity<ApiResponse<TicketResponse>> accessError = validateTicketAccess(authentication, ticket);
+            if (accessError != null) {
+                return accessError;
+            }
 
             ApiResponse<TicketResponse> response = new ApiResponse<>("success", ticket);
             response.addLink("self",        createLink("/api/tickets/" + id));
@@ -291,11 +349,20 @@ public class TicketController {
     public ResponseEntity<ApiResponse<TicketCommentResponse>> addComment(
             @PathVariable String id,
             @RequestBody AddCommentRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            Authentication authentication) {
 
         try {
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
-                userId = "usr_1001";
+                return errorResponse(HttpStatus.UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Missing or invalid bearer token: user id (sub) claim not found");
+            }
+
+            TicketResponse ticket = ticketService.getTicket(id);
+            ResponseEntity<ApiResponse<TicketCommentResponse>> accessError = validateTicketAccess(authentication, ticket);
+            if (accessError != null) {
+                return accessError;
             }
 
             TicketCommentResponse comment = ticketService.addComment(id, request, userId);
@@ -340,9 +407,16 @@ public class TicketController {
      */
     @GetMapping("/{id}/comments")
     public ResponseEntity<ApiResponse<List<TicketCommentResponse>>> listComments(
-            @PathVariable String id) {
+            @PathVariable String id,
+            Authentication authentication) {
 
         try {
+            TicketResponse ticket = ticketService.getTicket(id);
+            ResponseEntity<ApiResponse<List<TicketCommentResponse>>> accessError = validateTicketAccess(authentication, ticket);
+            if (accessError != null) {
+                return accessError;
+            }
+
             List<TicketCommentResponse> comments = ticketService.listComments(id);
 
             ApiResponse<List<TicketCommentResponse>> response =
@@ -384,11 +458,14 @@ public class TicketController {
             @PathVariable String id,
             @PathVariable String commentId,
             @RequestBody UpdateCommentRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+            Authentication authentication) {
 
         try {
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
-                userId = "usr_1001";
+                return errorResponse(HttpStatus.UNAUTHORIZED,
+                        "UNAUTHORIZED",
+                        "Missing or invalid bearer token: user id (sub) claim not found");
             }
 
             TicketCommentResponse comment =
@@ -424,9 +501,6 @@ public class TicketController {
      * Delete a comment.
      * Author can delete their own comment. ADMIN can delete any comment.
      *
-     * Note: Until role-based security is wired from JWT, pass X-Is-Admin: true
-     * header to simulate admin behaviour during testing.
-     *
      * Status Codes:
      *   204 No Content – Comment deleted.
      *   403 Forbidden  – Not the author and not an admin.
@@ -437,14 +511,14 @@ public class TicketController {
     public ResponseEntity<Void> deleteComment(
             @PathVariable String id,
             @PathVariable String commentId,
-            @RequestHeader(value = "X-User-Id",  required = false) String userId,
-            @RequestHeader(value = "X-Is-Admin", required = false) String isAdminHeader) {
+            Authentication authentication) {
 
         try {
+            String userId = SecurityContextUtil.getUserId(authentication);
             if (userId == null || userId.isBlank()) {
-                userId = "usr_1001";
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            boolean isAdmin = "true".equalsIgnoreCase(isAdminHeader);
+            boolean isAdmin = SecurityContextUtil.hasRole(authentication, "ADMIN");
 
             ticketService.deleteComment(id, commentId, userId, isAdmin);
             return ResponseEntity.noContent().build();
@@ -503,10 +577,34 @@ public class TicketController {
         return sb.toString();
     }
 
+    private String buildMyQueryString(String status, String assignedTo,
+                                      String resourceId, int page, int limit) {
+        return buildQueryString(status, null, assignedTo, resourceId, page, limit);
+    }
+
     private <T> ResponseEntity<ApiResponse<T>> errorResponse(
             HttpStatus status, String code, String message) {
         ApiResponse<T> error = new ApiResponse<>("error", null);
         error.setError(code, message);
         return ResponseEntity.status(status).body(error);
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> validateTicketAccess(Authentication authentication, TicketResponse ticket) {
+        String userId = SecurityContextUtil.getUserId(authentication);
+        if (userId == null || userId.isBlank()) {
+            return errorResponse(HttpStatus.UNAUTHORIZED,
+                    "UNAUTHORIZED",
+                    "Missing or invalid bearer token: user id (sub) claim not found");
+        }
+
+        boolean privileged = SecurityContextUtil.hasRole(authentication, "ADMIN")
+                || SecurityContextUtil.hasRole(authentication, "TECHNICIAN");
+        boolean ownerOrAssignee = userId.equals(ticket.getCreatedBy()) || userId.equals(ticket.getAssignedTo());
+
+        if (!privileged && !ownerOrAssignee) {
+            return errorResponse(HttpStatus.FORBIDDEN,
+                    "FORBIDDEN", "You can only access your own tickets");
+        }
+        return null;
     }
 }

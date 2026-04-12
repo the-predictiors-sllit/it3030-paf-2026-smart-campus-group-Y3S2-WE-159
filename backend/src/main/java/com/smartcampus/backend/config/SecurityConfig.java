@@ -3,6 +3,7 @@ package com.smartcampus.backend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -41,12 +42,40 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/health").permitAll() // is this is not here the backend container will fail to start, because every other api will block by this security config
-                // .requestMatchers("/actuator/health").permitAll() // is this is not here the backend container will fail to start, because every other api will block by this security config
-                // .requestMatchers("/health").hasRole("ADMIN")
-                .requestMatchers("/**").permitAll()
-                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // .requestMatchers("/api/technician/**").hasRole("TECHNICIAN")
+                .requestMatchers("/actuator/health", "/health").permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+
+                .requestMatchers(HttpMethod.POST, "/api/bookings").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/bookings/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/bookings/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/bookings").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/status").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bookings/*").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/*", "/api/resources/*/availability").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/resources").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/resources/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/resources/*").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.POST, "/api/tickets").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/tickets/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/tickets/*", "/api/tickets/*/comments").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/tickets").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/tickets/*").hasAnyRole("ADMIN", "TECHNICIAN")
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/tickets/*/comments").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/tickets/*/comments/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/*/comments/*").authenticated()
+
+                .requestMatchers(HttpMethod.POST, "/api/upload").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/upload/*").authenticated()
+
+                .requestMatchers(HttpMethod.POST, "/api/notifications").hasRole("ADMIN")
+                .requestMatchers("/api/notifications/**").authenticated()
+                .requestMatchers("/api/test/**", "/api/incidents/**").hasRole("ADMIN")
+
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

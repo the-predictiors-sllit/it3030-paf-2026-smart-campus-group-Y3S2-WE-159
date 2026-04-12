@@ -32,6 +32,7 @@ CREATE TABLE Resources (
     Location VARCHAR(150),
     Status VARCHAR(20) NOT NULL CHECK (Status IN ('ACTIVE', 'OUT_OF_SERVICE')),
     Description TEXT,
+    ImageUrl VARCHAR(255),
     CreatedAt DATETIME DEFAULT GETDATE()
 );
 
@@ -137,20 +138,20 @@ INSERT INTO Users (Id, Name, Email, Role, CreatedAt) VALUES
 ('usr_9002', 'Lucy Mechanic', 'tech.lucy@university.edu', 'TECHNICIAN', '2026-03-20 09:15:00');
 
 -- 2. Insert Resources (Rooms, Labs, Equipment)
-INSERT INTO Resources (Id, Name, Type, Capacity, Location, Status, Description, CreatedAt) VALUES 
+INSERT INTO Resources (Id, Name, Type, Capacity, Location, Status, Description, ImageUrl, CreatedAt) VALUES 
 -- Rooms
-('res_room_01', 'Main Lecture Hall A', 'ROOM', 150, 'Building 1, Floor 2', 'ACTIVE', 'High-tech lecture room with 2 projectors.', '2026-03-20 09:00:00'),
-('res_room_02', 'Seminar Room B', 'ROOM', 40, 'Building 1, Floor 3', 'ACTIVE', 'Interactive smart board included.', '2026-03-20 09:05:00'),
-('res_room_03', 'Study Pod 1', 'ROOM', 4, 'Library, Floor 1', 'ACTIVE', 'Soundproof booth.', '2026-03-20 09:10:00'),
-('res_room_04', 'Study Pod 2', 'ROOM', 4, 'Library, Floor 1', 'OUT_OF_SERVICE', 'Door lock broken.', '2026-03-20 09:15:00'),
+('res_room_01', 'Main Lecture Hall A', 'ROOM', 150, 'Building 1, Floor 2', 'ACTIVE', 'High-tech lecture room with 2 projectors.', 'resources/sample_main_lecture_hall_a.jpg', '2026-03-20 09:00:00'),
+('res_room_02', 'Seminar Room B', 'ROOM', 40, 'Building 1, Floor 3', 'ACTIVE', 'Interactive smart board included.', 'resources/sample_seminar_room_b.jpg', '2026-03-20 09:05:00'),
+('res_room_03', 'Study Pod 1', 'ROOM', 4, 'Library, Floor 1', 'ACTIVE', 'Soundproof booth.', NULL, '2026-03-20 09:10:00'),
+('res_room_04', 'Study Pod 2', 'ROOM', 4, 'Library, Floor 1', 'OUT_OF_SERVICE', 'Door lock broken.', NULL, '2026-03-20 09:15:00'),
 -- Labs
-('res_lab_01', 'Chemistry Lab 3', 'LAB', 30, 'Building 2, Floor 1', 'ACTIVE', 'Fume hoods, acid resistant tables.', '2026-03-20 09:20:00'),
-('res_lab_02', 'Physics Lab Intro', 'LAB', 25, 'Building 2, Floor 2', 'ACTIVE', 'Standard physics experimental kits.', '2026-03-20 09:25:00'),
-('res_lab_03', 'Advanced Robotics', 'LAB', 15, 'Building 4, Basement', 'ACTIVE', 'High-voltage tools available.', '2026-03-20 09:30:00'),
+('res_lab_01', 'Chemistry Lab 3', 'LAB', 30, 'Building 2, Floor 1', 'ACTIVE', 'Fume hoods, acid resistant tables.', 'resources/sample_chem_lab_3.jpg', '2026-03-20 09:20:00'),
+('res_lab_02', 'Physics Lab Intro', 'LAB', 25, 'Building 2, Floor 2', 'ACTIVE', 'Standard physics experimental kits.', NULL, '2026-03-20 09:25:00'),
+('res_lab_03', 'Advanced Robotics', 'LAB', 15, 'Building 4, Basement', 'ACTIVE', 'High-voltage tools available.', NULL, '2026-03-20 09:30:00'),
 -- Equipment
-('res_equip_01', 'Mobile Projector X1', 'EQUIPMENT', NULL, 'IT Storage Desk', 'ACTIVE', '1080p portable projector.', '2026-03-20 09:35:00'),
-('res_equip_02', 'Wireless Mic Array A', 'EQUIPMENT', NULL, 'IT Storage Desk', 'ACTIVE', '2 handheld mics & receiver.', '2026-03-20 09:40:00'),
-('res_equip_03', 'DSLR Camera Kit', 'EQUIPMENT', NULL, 'Media Room 4', 'OUT_OF_SERVICE', 'Lens cracked, under repair.', '2026-03-20 09:45:00');
+('res_equip_01', 'Mobile Projector X1', 'EQUIPMENT', NULL, 'IT Storage Desk', 'ACTIVE', '1080p portable projector.', 'resources/sample_projector_x1.jpg', '2026-03-20 09:35:00'),
+('res_equip_02', 'Wireless Mic Array A', 'EQUIPMENT', NULL, 'IT Storage Desk', 'ACTIVE', '2 handheld mics & receiver.', NULL, '2026-03-20 09:40:00'),
+('res_equip_03', 'DSLR Camera Kit', 'EQUIPMENT', NULL, 'Media Room 4', 'OUT_OF_SERVICE', 'Lens cracked, under repair.', NULL, '2026-03-20 09:45:00');
 
 -- 3. Insert ResourceAvailability (Hours)
 INSERT INTO ResourceAvailability (ResourceId, DayOfWeek, StartTime, EndTime) VALUES 

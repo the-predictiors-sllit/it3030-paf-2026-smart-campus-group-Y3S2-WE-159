@@ -39,7 +39,7 @@ public class ResourceService {
         // Create new resource entity
         Resource resource = new Resource(
             resourceId, request.getName(), request.getType(), request.getCapacity(),
-            request.getLocation(), request.getStatus() != null ? request.getStatus() : "ACTIVE", request.getDescription()
+            request.getLocation(), request.getStatus() != null ? request.getStatus() : "ACTIVE", request.getDescription(), request.getImageUrl()
         );
         
         // Save resource
@@ -106,6 +106,9 @@ public class ResourceService {
         }
         if (request.getDescription() != null) {
             resource.setDescription(request.getDescription());
+        }
+        if (request.getImageUrl() != null) {
+            resource.setImageUrl(request.getImageUrl());
         }
         
         // Save updated resource
@@ -218,12 +221,12 @@ public class ResourceService {
             LocalTime startTime = LocalTime.parse(window.getStartTime());
             LocalTime endTime = LocalTime.parse(window.getEndTime());
 
-            if (availabilityRepository.existsByResourceIdAndDayOfWeekAndStartTimeAndEndTime(
+            if (availabilityRepository.countMatchingWindow(
                 resourceId,
                 window.getDay(),
                 startTime,
                 endTime
-            )) {
+            ) > 0) {
                 continue;
             }
 
@@ -255,7 +258,9 @@ public class ResourceService {
             resource.getCapacity(),
             resource.getLocation(), 
             resource.getStatus(), 
-            resource.getDescription(), windows, 
+            resource.getDescription(),
+            resource.getImageUrl(),
+            windows, 
             resource.getCreatedAt()
         );
     }

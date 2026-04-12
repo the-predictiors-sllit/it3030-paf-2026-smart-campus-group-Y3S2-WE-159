@@ -23,6 +23,21 @@ import java.io.InputStream;
 @Service
 public class MinioService {
 
+    public enum StorageFolder {
+        TICKET("tickets"),
+        RESOURCE("resources");
+
+        private final String prefix;
+
+        StorageFolder(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String prefix() {
+            return prefix;
+        }
+    }
+
     private final MinioClient minioClient;
 
     @Value("${minio.bucketName}")
@@ -86,8 +101,13 @@ public class MinioService {
      * @throws RuntimeException if the upload fails.
      */
     public String uploadFile(String userId, MultipartFile file) {
+        return uploadFile(userId, file, StorageFolder.TICKET);
+    }
+
+    public String uploadFile(String userId, MultipartFile file, StorageFolder folder) {
         try {
             String generatedFileName = generateUniqueFileName(userId, file.getOriginalFilename());
+            String objectKey = buildObjectKey(folder, generatedFileName);
 
             // Make sure the bucket exists before uploading.
             ensureBucketExists();
@@ -97,14 +117,14 @@ public class MinioService {
                 minioClient.putObject(
                         PutObjectArgs.builder()
                                 .bucket(bucketName)
-                                .object(generatedFileName)
+                                .object(objectKey)
                                 .stream(inputStream, file.getSize(), -1)
                                 .contentType(file.getContentType())
                                 .build()
                 );
             }
 
-            return generatedFileName;
+            return objectKey;
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload file to Minio: " + e.getMessage(), e);
@@ -134,6 +154,10 @@ public class MinioService {
         }
     }
 
+    public void deleteFile(String generatedFileName, StorageFolder folder) {
+        deleteFile(buildObjectKey(folder, generatedFileName));
+    }
+
     /**
      * Checks whether a file exists in Minio.
      * Used to validate that an attachment name the user sent actually exists
@@ -156,6 +180,10 @@ public class MinioService {
         }
     }
 
+    public boolean fileExists(String generatedFileName, StorageFolder folder) {
+        return fileExists(buildObjectKey(folder, generatedFileName));
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /**
@@ -171,5 +199,19 @@ public class MinioService {
                     MakeBucketArgs.builder().bucket(bucketName).build()
             );
         }
+    }
+
+    private String buildObjectKey(StorageFolder folder, String generatedFileName) {
+        String cleanFileName = generatedFileName;
+        if (cleanFileName.startsWith("/")) {
+            cleanFileName = cleanFileName.substring(1);
+        }
+
+        if (cleanFileName.startsWith("tickets/") || cleanFileName.startsWith("resources/")) {
+            return cleanFileName;
+        }
+
+        StorageFolder target = folder == null ? StorageFolder.TICKET : folder;
+        return target.prefix() + "/" + cleanFileName;
     }
 }

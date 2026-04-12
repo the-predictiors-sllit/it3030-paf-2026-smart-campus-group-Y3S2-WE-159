@@ -30,17 +30,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> register(@AuthenticationPrincipal Jwt jwt){
         String auth0Id = jwt.getSubject();
 
-        // Try standard claims first, then custom namespace
-        // String name = jwt.getClaimAsString("name");
-        // if (name == null) {
-        //     name = jwt.getClaimAsString("https://smartcampus.api/name");
-        // }
-        // String email = jwt.getClaimAsString("email");
-        // if (email == null) {
-        //     email = jwt.getClaimAsString("https://smartcampus.api/email");
-        // }
-
-        // CORRECTION: Read standard Profile traits explicitly from the mapped custom namespace 
+        // Read profile traits from the custom Auth0 namespace claims.
         String name = jwt.getClaimAsString("https://smartcampus.api/name");
         String email = jwt.getClaimAsString("https://smartcampus.api/email");
 

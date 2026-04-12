@@ -12,6 +12,7 @@ public class ResourceResponse {
     private String location;
     private String status;
     private String description;
+    private String imageUrl;
     private List<AvailabilityWindow> availabilityWindows;
     private LocalDateTime createdAt;
 
@@ -41,7 +42,7 @@ public class ResourceResponse {
     public ResourceResponse() {}
 
     public ResourceResponse(String id, String name, String type, Integer capacity, 
-                           String location, String status, String description,
+                           String location, String status, String description, String imageUrl,
                            List<AvailabilityWindow> availabilityWindows, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
@@ -50,6 +51,7 @@ public class ResourceResponse {
         this.location = location;
         this.status = status;
         this.description = description;
+        this.imageUrl = imageUrl;
         this.availabilityWindows = availabilityWindows;
         this.createdAt = createdAt;
     }
@@ -69,6 +71,8 @@ public class ResourceResponse {
     public void setStatus(String status) { this.status = status; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public List<AvailabilityWindow> getAvailabilityWindows() { return availabilityWindows; }
     public void setAvailabilityWindows(List<AvailabilityWindow> availabilityWindows) { this.availabilityWindows = availabilityWindows; }
     public LocalDateTime getCreatedAt() { return createdAt; }

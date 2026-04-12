@@ -18,6 +18,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
 
     List<Notification> findByUserIdAndType(String userId, String type); // notifications by type
 
+    java.util.Optional<Notification> findByIdAndUserId(String id, String userId);
+
     // Mark one notification as read
     @Modifying
     @Query("UPDATE Notification n SET n.read = true WHERE n.id = :id")

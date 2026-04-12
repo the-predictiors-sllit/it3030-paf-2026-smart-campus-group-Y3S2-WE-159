@@ -22,6 +22,7 @@ const page = async () => {
 
   try {
     const { token } = await auth0.getAccessToken();
+    console.log(token)
 
     // Keep backend user record in sync with Auth0 identity.
     await fetch(`${SERVER_API_URL}/api/auth/register`, {

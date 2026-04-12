@@ -45,6 +45,10 @@ public class NotificationService {
         return notification.map(this::convertToDTO);
     }
 
+    public Optional<NotificationDTO> getNotificationByIdForUser(String notificationId, String userId) {
+        return notificationRepository.findByIdAndUserId(notificationId, userId).map(this::convertToDTO);
+    }
+
     //Create New notification
     public NotificationDTO createNotification(Notification notification){
         if(notification.getId()==null){
@@ -58,6 +62,21 @@ public class NotificationService {
     @Transactional
     public void markNotificationAsRead(String notificationId){
         notificationRepository.markAsRead(notificationId);
+    }
+
+    @Transactional
+    public boolean markNotificationAsReadForUser(String notificationId, String userId) {
+        Optional<Notification> notification = notificationRepository.findByIdAndUserId(notificationId, userId);
+        if (notification.isEmpty()) {
+            return false;
+        }
+
+        Notification current = notification.get();
+        if (!Boolean.TRUE.equals(current.getRead())) {
+            current.setRead(true);
+            notificationRepository.save(current);
+        }
+        return true;
     }
 
     // Mark all notification as read

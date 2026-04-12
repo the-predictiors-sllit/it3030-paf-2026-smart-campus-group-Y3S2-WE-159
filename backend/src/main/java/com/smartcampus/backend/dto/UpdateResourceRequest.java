@@ -12,6 +12,7 @@ public class UpdateResourceRequest {
     private String location;
     private String status;
     private String description;
+    private String imageUrl;
     private List<CreateResourceRequest.AvailabilityWindow> availabilityWindows;
 
     // Constructors
@@ -30,6 +31,8 @@ public class UpdateResourceRequest {
     public void setStatus(String status) { this.status = status; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public List<CreateResourceRequest.AvailabilityWindow> getAvailabilityWindows() { return availabilityWindows; }
     public void setAvailabilityWindows(List<CreateResourceRequest.AvailabilityWindow> availabilityWindows) { this.availabilityWindows = availabilityWindows; }
 }

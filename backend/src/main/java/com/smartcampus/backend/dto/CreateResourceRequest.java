@@ -10,6 +10,7 @@ public class CreateResourceRequest {
     private String location;
     private String status; // ACTIVE, OUT_OF_SERVICE
     private String description;
+    private String imageUrl;
     private List<AvailabilityWindow> availabilityWindows;
 
     public static class AvailabilityWindow {
@@ -50,6 +51,8 @@ public class CreateResourceRequest {
     public void setStatus(String status) { this.status = status; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public List<AvailabilityWindow> getAvailabilityWindows() { return availabilityWindows; }
     public void setAvailabilityWindows(List<AvailabilityWindow> availabilityWindows) { this.availabilityWindows = availabilityWindows; }
 }

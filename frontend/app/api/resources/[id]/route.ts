@@ -16,6 +16,7 @@ export async function GET(
 		}
 
 		const { token } = await auth0.getAccessToken();
+		
 		const { id } = await params;
 
 		const backendRes = await fetch(

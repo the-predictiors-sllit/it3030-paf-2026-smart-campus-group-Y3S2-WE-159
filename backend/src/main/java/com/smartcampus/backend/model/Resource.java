@@ -29,6 +29,9 @@ public class Resource {
     @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "ImageUrl", length = 255)
+    private String imageUrl;
+
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
 
@@ -37,7 +40,7 @@ public class Resource {
     }
 
     public Resource(String id, String name, String type, Integer capacity, 
-                   String location, String status, String description) {
+                   String location, String status, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -45,6 +48,7 @@ public class Resource {
         this.location = location;
         this.status = status;
         this.description = description;
+        this.imageUrl = imageUrl;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -103,6 +107,14 @@ public class Resource {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LocalDateTime getCreatedAt() {
