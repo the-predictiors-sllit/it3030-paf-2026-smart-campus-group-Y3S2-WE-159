@@ -35,6 +35,9 @@ export const UserCard_navbar = () => {
     const handleProfileClick = () =>{
         router.push("/user/profile")
     }
+    const handleLogoutClick = () => {
+        window.location.assign('/auth/logout?returnTo=%2Fauth%2Flogin');
+    }
     
     let avatar_image = "https://images.pexels.com/photos/2103864/pexels-photo-2103864.jpeg"
     let avatar_image_alt = name ?? "Unknown User";
@@ -106,7 +109,14 @@ export const UserCard_navbar = () => {
                             <div className='flex flex-row gap-3'>
 
                             <Button variant={"link"} className=' text-[10px] p-0 m-0' onClick={handleProfileClick}><EditIcon/>Profile</Button>
-                            <Button variant={"link"} className=' text-[10px] p-0 m-0'><LogOut/>Logout</Button>
+                            <Button
+                                variant={"link"}
+                                className=' text-[10px] p-0 m-0'
+                                onClick={handleLogoutClick}
+                            >
+                                <LogOut />
+                                Logout
+                            </Button>
                             </div>
                             {/* <div className="flex items-center gap-1">
                                 <CalendarIcon className="size-3.5 opacity-60" />

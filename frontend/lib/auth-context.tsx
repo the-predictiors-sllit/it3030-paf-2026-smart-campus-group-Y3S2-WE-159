@@ -20,9 +20,6 @@ export interface AuthContextType {
   // Role checking methods
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
-
-  // Raw access token (for API calls if needed)
-  accessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<UserRole[]>([UserRole.USER]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -83,18 +79,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // The backend should provide the role, but we can also extract from token if needed
           const userRoles = extractRolesToArray(profileData.role);
           setRoles(userRoles);
-
-          // Get token and store it (Note: due to security reasons, only use this for API calls)
-          // In production, consider not exposing the token here
-          try {
-            const tokenRes = await fetch('/api/auth/token', { cache: 'no-store' });
-            if (tokenRes.ok) {
-              const tokenData = await tokenRes.json();
-              if (active) setAccessToken(tokenData.token);
-            }
-          } catch {
-            // Token fetching is optional, continue without it
-          }
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load user profile';
@@ -123,7 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     error,
     hasRole: (role: UserRole) => hasRole(roles, role),
     hasAnyRole: (requiredRoles: UserRole[]) => hasAnyRole(roles, requiredRoles),
-    accessToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

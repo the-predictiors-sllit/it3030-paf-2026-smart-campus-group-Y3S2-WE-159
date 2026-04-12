@@ -19,8 +19,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-import { getAuthToken } from "@/lib/getAuthToken"
-import { CLIENT_API_URL } from '@/lib/api-client'
 import { toast } from 'sonner'
 import { Field } from '../ui/field'
 import { Input } from '../ui/input'
@@ -71,14 +69,12 @@ export const MyBookings = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const token = await getAuthToken();
             try {
-                const response = await fetch(CLIENT_API_URL + `/api/bookings/me`, {
+                const response = await fetch('/api/bookings/me', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
+                    },
                 })
                 const result: ApiResponseProps = await response.json();
                 if (result.status === "success") {

@@ -55,13 +55,13 @@ export const ResourceView = ({ id }: { id: string }) => {
             // const token = "token"
 
             try {
-                const response = await fetch(CLIENT_API_URL + `/api/resources/${id}`, {
+                const response = await fetch(`/api/resources/${encodeURIComponent(id)}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`
-                    }
                 })
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
                 const result: ApiResponseProps = await response.json();
 
                 if (result.status === "success") {

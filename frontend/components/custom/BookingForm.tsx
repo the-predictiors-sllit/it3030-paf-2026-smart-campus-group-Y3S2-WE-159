@@ -4,7 +4,6 @@ import * as React from "react"
 import { format } from "date-fns"
 import { ChevronDownIcon } from "lucide-react"
 import { useForm, Controller } from "react-hook-form"
-import { auth0 } from '@/lib/auth0'
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
@@ -37,8 +36,6 @@ import { Textarea } from "@/components/ui/textarea"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { CLIENT_API_URL } from "@/lib/api-client"
-import { getAuthToken } from "@/lib/getAuthToken"
 import { useRouter } from "next/navigation"
 
 
@@ -77,15 +74,6 @@ export const BookingForm = ({ id }: { id: string }) => {
 
   const onSubmit = async (values: BookingFormData) => {
     try {
-      // to get access token
-      const token = await getAuthToken();
-
-      if (!token) {
-        toast.error("Please login first");
-        throw new Error("Can't find the user. Login again");;
-      }
-
-
       // convert date and time to date time
       const combineDateTime = (date: Date, time: string) => {
         const d = new Date(date);
@@ -110,11 +98,10 @@ export const BookingForm = ({ id }: { id: string }) => {
       };
 
       // api
-      const response = await fetch(CLIENT_API_URL + "/api/bookings", {
+      const response = await fetch('/api/bookings', {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload),
       });

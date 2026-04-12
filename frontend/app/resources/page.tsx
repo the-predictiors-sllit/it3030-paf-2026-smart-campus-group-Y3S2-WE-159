@@ -1,7 +1,6 @@
 "use client"
 import { ResourceCard } from '@/components/custom/ResourceCard';
 import { Item } from '@/components/ui/item';
-import { CLIENT_API_URL } from '@/lib/api-client';
 import React, { useEffect, useState } from 'react'
 import { toast } from "sonner"
 import {
@@ -52,16 +51,17 @@ const page = () => {
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        // const token = "token"
         const fetchResources = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${CLIENT_API_URL}/api/resources?page=1&limit=10`, {
+                const query = new URLSearchParams({
+                    page: '1',
+                    limit: '10',
+                    // add other prams here
+                });
+
+                const response = await fetch(`/api/resources?${query.toString()}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 'Authorization': `Bearer ${token}`
-                    }
                 });
 
                 if (!response.ok) {
