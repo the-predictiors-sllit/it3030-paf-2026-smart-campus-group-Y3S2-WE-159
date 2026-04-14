@@ -118,13 +118,13 @@ export const MyBookings = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {resources.map((resource) => (
-                        <TableRow key={resource.id}>
-                            <TableCell className="font-medium cursor-pointer underline hover:translate-x-1" onClick={()=>router.push(`/resources/${resource.resource.id}`)}>{resource.resource.name}</TableCell>
-                            <TableCell>{resource.startTime}</TableCell>
-                            <TableCell>{resource.endTime}</TableCell>
-                            <TableCell>{resource.status}</TableCell>
-                            <TableCell hidden={resource.status !== "PENDING"}>
+                    {bookings.map((booking) => (
+                        <TableRow key={booking.id}>
+                            <TableCell className="font-medium cursor-pointer underline hover:translate-x-1" onClick={()=>router.push(`/resources/${booking.resource.id}`)}>{booking.resource.name}</TableCell>
+                            <TableCell>{booking.startTime}</TableCell>
+                            <TableCell>{booking.endTime}</TableCell>
+                            <TableCell>{booking.status}</TableCell>
+                            <TableCell hidden={booking.status !== "PENDING"}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon" className="size-8">

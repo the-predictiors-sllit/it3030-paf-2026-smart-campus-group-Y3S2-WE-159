@@ -72,8 +72,8 @@ const features = [
 export function UserDashboardBento() {
   return (
     <BentoGrid className="lg:grid-rows-1">
-      {features.map((feature) => (
-        <BentoCard key={feature.name} {...feature} />
+      {features.map((feature,index) => (
+        <BentoCard key={index} {...feature} />
       ))}
     </BentoGrid>
   )

@@ -16,12 +16,11 @@ export async function GET(
 		}
 
 		const { token } = await auth0.getAccessToken();
-		
-		const { id } = await params;
 
+		const { id } = await params;
 		const Api_Url = getBaseUrl();
 		const backendRes = await fetch(
-			`${Api_Url}/api/resources/${encodeURIComponent(id)}`,
+			`${Api_Url}/api/tickets/${encodeURIComponent(id)}/comments`,
 			{
 				method: 'GET',
 				headers: {

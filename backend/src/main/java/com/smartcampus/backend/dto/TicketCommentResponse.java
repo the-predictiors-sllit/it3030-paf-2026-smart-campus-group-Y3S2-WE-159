@@ -11,6 +11,7 @@ public class TicketCommentResponse {
     private String id;
     private String ticketId;
     private String authorId;
+    private String authorName;
     private String text;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -20,14 +21,15 @@ public class TicketCommentResponse {
     public TicketCommentResponse() {}
 
     public TicketCommentResponse(String id, String ticketId, String authorId,
-                                  String text, LocalDateTime createdAt,
+                                  String authorName, String text, LocalDateTime createdAt,
                                   LocalDateTime updatedAt) {
-        this.id        = id;
-        this.ticketId  = ticketId;
-        this.authorId  = authorId;
-        this.text      = text;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.id         = id;
+        this.ticketId   = ticketId;
+        this.authorId   = authorId;
+        this.authorName = authorName;
+        this.text       = text;
+        this.createdAt  = createdAt;
+        this.updatedAt  = updatedAt;
     }
 
     // ── Getters & Setters ─────────────────────────────────────────────────────
@@ -40,6 +42,9 @@ public class TicketCommentResponse {
 
     public String getAuthorId() { return authorId; }
     public void setAuthorId(String authorId) { this.authorId = authorId; }
+
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
 
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }

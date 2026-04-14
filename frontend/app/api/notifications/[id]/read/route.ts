@@ -1,5 +1,5 @@
 import { auth0 } from '@/lib/auth0';
-import { SERVER_API_URL } from '@/lib/api-client';
+import { getBaseUrl, SERVER_API_URL } from '@/lib/api-client';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(
@@ -18,9 +18,9 @@ export async function PATCH(
 		const { token } = await auth0.getAccessToken();
 		
 		const { id } = await params;
-
+const Api_Url = getBaseUrl();
 		const backendRes = await fetch(
-			`${SERVER_API_URL}/api/notifications/${encodeURIComponent(id)}/read`,
+			`${Api_Url}/api/notifications/${encodeURIComponent(id)}/read`,
 			{
 				method: 'PATCH',
 				headers: {

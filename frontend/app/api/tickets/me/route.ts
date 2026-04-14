@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-import { SERVER_API_URL } from '@/lib/api-client';
+import { getBaseUrl, SERVER_API_URL } from '@/lib/api-client';
 
 export async function GET() {
   try {
@@ -11,10 +11,11 @@ export async function GET() {
         { status: 401 }
       );
     }
-
+    
     const { token } = await auth0.getAccessToken();
-
-    const backendRes = await fetch(`${SERVER_API_URL}/api/tickets/me`, {
+    
+    const Api_Url = getBaseUrl();
+    const backendRes = await fetch(`${Api_Url}/api/tickets/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

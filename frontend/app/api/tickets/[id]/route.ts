@@ -1,8 +1,11 @@
 import { auth0 } from '@/lib/auth0';
-import { NextRequest, NextResponse } from 'next/server';
 import { getBaseUrl, SERVER_API_URL } from '@/lib/api-client';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function GET(
+    _request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         const session = await auth0.getSession();
         if (!session?.user) {
@@ -13,16 +16,20 @@ export async function POST(request: NextRequest) {
         }
 
         const { token } = await auth0.getAccessToken();
-        const formData = await request.formData();
+        
+        const { id } = await params;
 
         const Api_Url = getBaseUrl();
-        const backendRes = await fetch(`${Api_Url}/api/upload`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-        });
+        const backendRes = await fetch(
+            `${Api_Url}/api/tickets/${encodeURIComponent(id)}`,
+            {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                cache: 'no-store',
+            }
+        );
 
         const text = await backendRes.text();
 

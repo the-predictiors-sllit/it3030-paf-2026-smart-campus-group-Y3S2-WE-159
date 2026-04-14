@@ -65,7 +65,7 @@ type TicketFormData = z.infer<typeof ticketSchema>;
 
 
 export const TicketForm = ({ resourceId }: { resourceId: string }) => {
-    const [markdownValue, setMarkdownValue] = useState<string>("") // for markdown editor
+
     const { theme, resolvedTheme } = useTheme(); // for markdown editor
     const [isMounted, setIsMounted] = useState(false)// for markdown editor
     useEffect(() => {

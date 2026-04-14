@@ -27,7 +27,7 @@ interface FileUploadCompactProps {
 }
 
 export function ImageUpload({
-    maxFiles = 10,
+    maxFiles = 3,
     maxSize = 100 * 1024 * 1024, // 2MB
     accept = "image/jpeg,image/png ,image/gif,image/webp",
     multiple = true,

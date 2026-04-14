@@ -64,7 +64,7 @@ const Facilities_Assets: NavItem[] = [
     },
     {
         title: "Resource Management",
-        href: "/resources/admin",
+        href: "#",
         description: "Manage facilities and resources",
         roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
     },
@@ -87,7 +87,7 @@ const Incident: NavItem[] = [
     },
     {
         title: "Manage Tickets",
-        href: "/technician/tickets",
+        href: "#",
         description: "Manage all support tickets",
         roles: [UserRole.ADMIN, UserRole.TECHNICIAN],
     },

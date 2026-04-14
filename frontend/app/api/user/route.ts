@@ -1,6 +1,6 @@
 import { auth0 } from "@/lib/auth0";
 import { NextResponse } from "next/server";
-import { SERVER_API_URL } from "@/lib/api-client";
+import { getBaseUrl, SERVER_API_URL } from "@/lib/api-client";
 
 type BackendProfileResponse = {
   status: "success";
@@ -25,8 +25,9 @@ export async function GET() {
     const { token } = await auth0.getAccessToken();
     let registerWarning: { status: number; details: string } | null = null;
 
+    const Api_Url = getBaseUrl();
     // register user
-    const registerRes = await fetch(`${SERVER_API_URL}/api/auth/register`,
+    const registerRes = await fetch(`${Api_Url}/api/auth/register`,
       {
         method: "POST",
         headers: {
