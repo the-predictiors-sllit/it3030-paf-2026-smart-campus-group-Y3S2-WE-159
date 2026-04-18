@@ -2,34 +2,37 @@ package com.smartcampus.backend.dto.auth0;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Auth0UserDto {
     @JsonProperty("user_id")
     private String userId;
     private String name;
+    private String nickname;
+    @JsonProperty("given_name")
+    private String givenName;
+    @JsonProperty("family_name")
+    private String familyName;
     private String email;
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    private String picture;
+    @JsonProperty("email_verified")
+    private boolean emailVerified;
+    @JsonProperty("created_at")
+    private String createdAt;
+    @JsonProperty("updated_at")
+    private String updatedAt;
+    @JsonProperty("last_login")
+    private String lastLogin;
+    @JsonProperty("last_ip")
+    private String lastIp;
+    @JsonProperty("logins_count")
+    private Integer loginsCount;
 }

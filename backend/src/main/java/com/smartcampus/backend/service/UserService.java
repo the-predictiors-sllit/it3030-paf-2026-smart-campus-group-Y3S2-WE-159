@@ -75,7 +75,6 @@ public class UserService {
             .id(user.getId())
             .email(user.getEmail())
             .name(user.getName())
-            .imageUrl(user.getImageUrl())
             .role(user.getRole())
             .createdAt(user.getCreatedAt())
             .build();

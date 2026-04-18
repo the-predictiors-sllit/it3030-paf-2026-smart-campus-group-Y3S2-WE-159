@@ -1,8 +1,7 @@
-package com.smartcampus.backend.dto;
+package com.smartcampus.backend.dto.auth0;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,12 +14,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserResponse {
+
+public class Auth0UserResponse {
     private String id;
+    private String userId;
     private String name;
+    private String nickname;
+    private String givenName;
+    private String familyName;
     private String email;
-    private String role;
-    private LocalDateTime createdAt;
+    private String picture;
+    private boolean emailVerified;
+    private String createdAt;
+    private String updatedAt;
+    private String lastLogin;
+    private String lastIp;
+    private int loginsCount;
 
     @Builder.Default
     @JsonProperty("_links")

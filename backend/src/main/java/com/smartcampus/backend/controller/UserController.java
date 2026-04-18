@@ -61,7 +61,6 @@ public class UserController {
                 .id(dto.getId())
                 .email(dto.getEmail())
                 .name(dto.getName())
-                .imageUrl(dto.getImageUrl())
                 .role(dto.getRole())
                 .createdAt(dto.getCreatedAt())
                 .build();

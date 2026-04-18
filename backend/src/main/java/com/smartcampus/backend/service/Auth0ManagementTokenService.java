@@ -3,6 +3,7 @@ package com.smartcampus.backend.service;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -38,6 +39,7 @@ public class Auth0ManagementTokenService {
                         "audience", props.getAudience()))
                 .retrieve()
                 .body(Map.class);
+                // .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
         if (response == null || !response.containsKey("access_token")) {
             throw new IllegalStateException("Auth0 token response missing access_token");

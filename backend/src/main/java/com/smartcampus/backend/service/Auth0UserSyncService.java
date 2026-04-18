@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.smartcampus.backend.dto.auth0.Auth0RoleDto;
 import com.smartcampus.backend.dto.auth0.Auth0UserDto;
 import com.smartcampus.backend.model.User;
 
@@ -36,12 +37,7 @@ public class Auth0UserSyncService {
                     continue;
                 }
 
-                List<String> auth0Roles = auth0Api.getRoleNamesForUser(u.getUserId());
-                String localRole = mapRole(auth0Roles);
-
-                String safeName = (u.getName() == null || u.getName().isBlank()) ? "Unknown User" : u.getName();
-                userService.syncUser(u.getUserId(), safeName, u.getEmail(), localRole);
-                synced++;
+                    List<Auth0RoleDto> auth0Roles = auth0Api.getRoleNamesForUser(u.getUserId());
             }
 
             if (users.size() < perPage) {
@@ -53,14 +49,14 @@ public class Auth0UserSyncService {
         return synced;
     }
 
-    private String mapRole(List<String> roles) {
+    private String mapRole(List<Auth0RoleDto> roles) {
         if (roles == null || roles.isEmpty()) {
             return "USER";
         }
-        if (roles.stream().anyMatch(r -> "ADMIN".equalsIgnoreCase(r))) {
+        if (roles.stream().map(Auth0RoleDto::getName).anyMatch(r -> "ADMIN".equalsIgnoreCase(r))) {
             return "ADMIN";
         }
-        if (roles.stream().anyMatch(r -> "TECHNICIAN".equalsIgnoreCase(r))) {
+        if (roles.stream().map(Auth0RoleDto::getName).anyMatch(r -> "TECHNICIAN".equalsIgnoreCase(r))) {
             return "TECHNICIAN";
         }
         return "USER";

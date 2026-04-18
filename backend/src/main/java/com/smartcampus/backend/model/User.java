@@ -26,9 +26,6 @@ public class User {
     @Column(name = "Email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "ImageUrl")
-    private String imageUrl;
-
     // @Enumerated(EnumType.STRING)
     @Column(name = "Role", nullable = false, length = 20)
     private String role;

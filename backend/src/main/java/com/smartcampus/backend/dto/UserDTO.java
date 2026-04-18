@@ -15,7 +15,6 @@ public class UserDTO {
 
     private String id;
     private String name;
-    private String imageUrl;
     private String email;
     private String role;
     private LocalDateTime createdAt;

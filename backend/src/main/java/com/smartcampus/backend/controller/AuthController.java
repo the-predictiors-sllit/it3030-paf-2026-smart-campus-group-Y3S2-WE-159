@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.smartcampus.backend.dto.ApiResponse;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -87,6 +89,8 @@ public class AuthController {
             )
         ));
     }
+
+
     
 
 }
