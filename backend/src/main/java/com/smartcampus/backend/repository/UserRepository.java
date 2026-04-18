@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.smartcampus.backend.model.User;
 
+
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(String email); //get notifications by email.
+
+    Optional<User> findById(String id);
 }

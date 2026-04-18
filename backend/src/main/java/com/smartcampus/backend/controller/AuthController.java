@@ -40,7 +40,7 @@ public class AuthController {
 
         List<String> roles = jwt.getClaimAsStringList("https://smartcampus.api/roles");
         // System.out.println(roles);
-        User.Role role = resolveRole(roles);
+        String role = resolveRole(roles);
 
         User user = userService.syncUser(auth0Id, name, email, role); //if user not in the db this add/update the user
 
@@ -57,18 +57,18 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    private User.Role resolveRole(List<String> roles) {
+    private String resolveRole(List<String> roles) {
         if (roles == null || roles.isEmpty()) {
-            return User.Role.USER;
+            return "USER";
         }
 
         if (roles.contains("ADMIN")) {
-            return User.Role.ADMIN;
+            return "ADMIN";
         }
         if (roles.contains("TECHNICIAN")) {
-            return User.Role.TECHNICIAN;
+            return "TECHNICIAN";
         }
-        return User.Role.USER;
+        return "USER";
     }
 
 

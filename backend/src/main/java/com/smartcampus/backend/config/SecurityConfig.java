@@ -77,6 +77,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/notifications/**").authenticated()
                 .requestMatchers("/api/test/**").hasRole("ADMIN")
 
+
+                // .requestMatchers(HttpMethod.POST, "/api/admin/auth0/sync-users").hasRole("ADMIN")
+
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

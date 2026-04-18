@@ -18,6 +18,7 @@ CREATE TABLE Users (
     Name VARCHAR(100) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
     Role VARCHAR(20) NOT NULL CHECK (Role IN ('USER', 'ADMIN', 'TECHNICIAN')),
+    ImageUrl VARCHAR(500),
     CreatedAt DATETIME DEFAULT GETDATE()
 );
 
@@ -32,7 +33,7 @@ CREATE TABLE Resources (
     Location VARCHAR(150),
     Status VARCHAR(20) NOT NULL CHECK (Status IN ('ACTIVE', 'OUT_OF_SERVICE')),
     Description TEXT,
-    ImageUrl VARCHAR(255),
+    ImageUrl VARCHAR(500),
     CreatedAt DATETIME DEFAULT GETDATE()
 );
 
@@ -90,7 +91,7 @@ CREATE TABLE Tickets (
 CREATE TABLE TicketAttachments (
     Id INT PRIMARY KEY IDENTITY(1,1),
     TicketId VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES Tickets(Id),
-    GeneratedFileName VARCHAR(255) NOT NULL,
+    GeneratedFileName VARCHAR(500) NOT NULL,
     UploadedAt DATETIME DEFAULT GETDATE()
 );
 
