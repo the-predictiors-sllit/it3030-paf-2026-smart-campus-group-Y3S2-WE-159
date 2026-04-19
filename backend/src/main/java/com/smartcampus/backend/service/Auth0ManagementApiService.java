@@ -1,6 +1,6 @@
 package com.smartcampus.backend.service;
 
-import java.util.Arrays;
+// import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +44,8 @@ public class Auth0ManagementApiService {
         return users == null ? Collections.emptyList() : users;
     }
 
+    // -----------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------
     // this is for the endpoint
     public List<Auth0UserDto> listOfAllUsers(int page, int perPage, String sort, String search) {
         String token = tokenService.getAccessToken();
@@ -72,6 +74,21 @@ public class Auth0ManagementApiService {
         return users == null ? Collections.emptyList() : users;
     }
 
+    // remove user
+    public void deleteUser(String auth0UserId) {
+        String token = tokenService.getAccessToken();
+        restClient.delete()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users/{id}")
+                        .build(auth0UserId))
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    // -----------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------
+    // roles
     public List<Auth0RoleDto> getRoleNamesForUser(String auth0UserId) {
         String token = tokenService.getAccessToken();
 
@@ -89,6 +106,19 @@ public class Auth0ManagementApiService {
         } else {
             return roles;
         }
+    }
+
+    // remove user role
+    // todo: need a body to send role id 
+    public void deleteUserRole(String auth0UserId) {
+        String token = tokenService.getAccessToken();
+        restClient.delete()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/users/{id}/roles")
+                        .build(auth0UserId))
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     // // array example

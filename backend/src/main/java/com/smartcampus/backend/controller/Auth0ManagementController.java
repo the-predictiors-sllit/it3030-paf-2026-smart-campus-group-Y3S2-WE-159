@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,6 +58,12 @@ public class Auth0ManagementController {
                                 .header("Cache-Control", "no-store")
                                 .body(response);
 
+        }
+
+        @DeleteMapping("/users/{id}")
+        public ResponseEntity<Void> deleteUsers(@PathVariable String id, Authentication authentication) {
+                authService.deleteUser(id);
+                return ResponseEntity.noContent().build();
         }
 
         private Auth0UserResponse toUserResponse(Auth0UserDto dto) {
@@ -133,6 +140,12 @@ public class Auth0ManagementController {
                                 .header("Cache-Control", "no-store")
                                 .body(response);
 
+        }
+
+        @DeleteMapping("/users/{id}/roles")
+        public ResponseEntity<Void> deleteRoleOfUsers(@PathVariable String id, Authentication authentication) {
+                authService.deleteUserRole(id);
+                return ResponseEntity.noContent().build();
         }
 
         private Auth0RoleResponse toRoleResponse(Auth0RoleDto dto) {
