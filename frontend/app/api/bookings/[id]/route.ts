@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getBaseUrl } from '@/lib/api-client';
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth0.getSession();
     if (!session?.user) {
@@ -13,16 +16,19 @@ export async function GET(request: NextRequest) {
     }
 
     const { token } = await auth0.getAccessToken();
-    const search = request.nextUrl.search;
+    const { id } = await params;
 
     const Api_Url = getBaseUrl();
-    const backendRes = await fetch(`${Api_Url}/api/bookings${search}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
-    });
+    const backendRes = await fetch(
+      `${Api_Url}/api/bookings/${encodeURIComponent(id)}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      }
+    );
 
     const text = await backendRes.text();
 
@@ -38,7 +44,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth0.getSession();
     if (!session?.user) {
@@ -49,26 +58,22 @@ export async function POST(request: NextRequest) {
     }
 
     const { token } = await auth0.getAccessToken();
-    const payload = await request.json();
+    const { id } = await params;
 
     const Api_Url = getBaseUrl();
-    const backendRes = await fetch(`${Api_Url}/api/bookings`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-    });
+    const backendRes = await fetch(
+      `${Api_Url}/api/bookings/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      }
+    );
 
-    const text = await backendRes.text();
-
-    return new NextResponse(text, {
+    return new NextResponse(null, {
       status: backendRes.status,
-      headers: {
-        'Content-Type': backendRes.headers.get('content-type') || 'application/json',
-      },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';

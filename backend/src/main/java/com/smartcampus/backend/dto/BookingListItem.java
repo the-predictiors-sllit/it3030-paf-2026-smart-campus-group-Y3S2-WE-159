@@ -13,6 +13,7 @@ import java.util.Map;
 public class BookingListItem {
     private String id;
     private ResourceInfo resource;
+    private UserInfo user;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String status;
@@ -24,10 +25,11 @@ public class BookingListItem {
         this._links = new HashMap<>();
     }
 
-    public BookingListItem(String id, ResourceInfo resource, LocalDateTime startTime,
+    public BookingListItem(String id, ResourceInfo resource, UserInfo user, LocalDateTime startTime,
                           LocalDateTime endTime, String status) {
         this.id = id;
         this.resource = resource;
+        this.user = user;
         this.startTime = startTime;
         this.endTime = endTime;
         this.status = status;
@@ -64,6 +66,46 @@ public class BookingListItem {
         }
     }
 
+    // Static inner class for user information
+    public static class UserInfo {
+        private String id;
+        private String name;
+        private String email;
+
+        public UserInfo() {
+        }
+
+        public UserInfo(String id, String name, String email) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+    }
+
     // Getters and Setters
     public String getId() {
         return id;
@@ -79,6 +121,14 @@ public class BookingListItem {
 
     public void setResource(ResourceInfo resource) {
         this.resource = resource;
+    }
+
+    public UserInfo getUser() {
+        return user;
+    }
+
+    public void setUser(UserInfo user) {
+        this.user = user;
     }
 
     public LocalDateTime getStartTime() {
