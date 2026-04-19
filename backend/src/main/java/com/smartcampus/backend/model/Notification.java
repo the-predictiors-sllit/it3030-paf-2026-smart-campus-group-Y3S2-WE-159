@@ -28,7 +28,7 @@ public class Notification {
     @Column(name = "Title", nullable = false)
     private String title;
     
-    @Column(name = "Message", nullable = false)
+    @Column(name = "Message", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String message;
     
     @Column(name = "ReferenceId")

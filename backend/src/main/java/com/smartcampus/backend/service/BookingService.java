@@ -2,6 +2,7 @@ package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.dto.*;
 import com.smartcampus.backend.model.Booking;
+import com.smartcampus.backend.model.Notification;
 import com.smartcampus.backend.model.ResourceAvailability;
 import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.repository.BookingRepository;
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class BookingService {
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -79,6 +83,19 @@ public class BookingService {
         // Save to database
         Booking savedBooking = bookingRepository.save(booking);
 
+        // for notification:by pasan
+        Notification notification = Notification.builder()
+                .userId(savedBooking.getUserId()) // target user
+                .type("BOOKING_CREATED")
+                .title("New Booking Request")
+                .message(NotificationTemplates.BookingCreate(savedBooking.getStatus(), savedBooking.getCreatedAt(),
+                        savedBooking.getResourceId()))
+                .referenceId(savedBooking.getId())
+                .read(false)
+                .build();
+
+        notificationService.createNotification(notification);
+
         // Convert to response DTO
         return convertToBookingResponse(savedBooking);
     }
@@ -132,6 +149,20 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking updatedBooking = bookingRepository.save(booking);
+
+        // for notification:by pasan
+        Notification notification = Notification.builder()
+                .userId(updatedBooking.getUserId()) // target user
+                .type("BOOKING_STATUS_UPDATED")
+                .title(NotificationTemplates.BookingStatusTitle(newStatus))
+                .message(NotificationTemplates.BookingStatus(newStatus, updatedBooking.getResourceId(),
+                        updatedBooking.getReason()))
+                .referenceId(updatedBooking.getId())
+                .read(false)
+                .build();
+
+        notificationService.createNotification(notification);
+
         return convertToBookingResponse(updatedBooking);
     }
 

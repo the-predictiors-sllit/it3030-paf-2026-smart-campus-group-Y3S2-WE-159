@@ -74,17 +74,6 @@ public class Auth0ManagementApiService {
         return users == null ? Collections.emptyList() : users;
     }
 
-    // remove user
-    public void deleteUser(String auth0UserId) {
-        String token = tokenService.getAccessToken();
-        restClient.delete()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/users/{id}")
-                        .build(auth0UserId))
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .toBodilessEntity();
-    }
 
     // -----------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------
@@ -106,19 +95,6 @@ public class Auth0ManagementApiService {
         } else {
             return roles;
         }
-    }
-
-    // remove user role
-    // todo: need a body to send role id 
-    public void deleteUserRole(String auth0UserId) {
-        String token = tokenService.getAccessToken();
-        restClient.delete()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/users/{id}/roles")
-                        .build(auth0UserId))
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .toBodilessEntity();
     }
 
     // // array example

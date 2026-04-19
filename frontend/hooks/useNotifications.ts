@@ -40,7 +40,10 @@ export const useNotifications = (params: Record<string, string> = {}) => {
       const result: NotificationResponse = await response.json();
 
       if (result.status === "success" && result.data) {
-        setNotifications(result.data.items);
+        const sortedItems = [...result.data.items].sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setNotifications(sortedItems);
       } else if (result.error) {
         toast.error(result.error.message);
       }
