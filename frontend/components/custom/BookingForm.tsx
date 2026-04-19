@@ -7,6 +7,8 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
@@ -20,14 +22,18 @@ const bookingSchema = z.object({
 type BookingFormInput = z.input<typeof bookingSchema>
 type BookingFormData = z.infer<typeof bookingSchema>
 
-// ─── Quick-pick chips ─────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const PURPOSE_CHIPS = ["Team meeting", "Workshop", "Client presentation", "Training"]
 
-// ─── CalendarIcon ─────────────────────────────────────────────────────────────
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
 const CalendarIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 opacity-55">
+  <svg
+    width="15" height="15" viewBox="0 0 16 16" fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="flex-shrink-0 opacity-55"
+  >
     <rect x="1.5" y="3" width="13" height="11.5" rx="2" stroke="#6e6258" strokeWidth="1.3" />
     <path d="M1.5 6.5h13" stroke="#6e6258" strokeWidth="1.3" />
     <path d="M5 1.5v3M11 1.5v3" stroke="#6e6258" strokeWidth="1.3" strokeLinecap="round" />
@@ -39,19 +45,23 @@ const CalendarIcon = () => (
 
 const ArrowIcon = () => (
   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3 10h14M10 4l7 6-7 6" stroke="#e8e0d5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M3 10h14M10 4l7 6-7 6"
+      stroke="#e8e0d5" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round"
+    />
   </svg>
 )
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const Label = ({ children }: { children: React.ReactNode }) => (
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="mb-[7px] text-[11px] font-medium uppercase tracking-[0.1em] text-[#8a8278]">
     {children}
   </p>
 )
 
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+const SectionDivider = ({ children }: { children: React.ReactNode }) => (
   <div className="flex items-center gap-[10px] mt-[1.4rem] mb-[0.75rem]">
     <span className="w-[14px] h-px bg-[#a09080] opacity-60 flex-shrink-0" />
     <p className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-[#a09080] whitespace-nowrap">
@@ -61,14 +71,57 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   </div>
 )
 
+// ─── DatePickerButton ─────────────────────────────────────────────────────────
+
+interface DatePickerButtonProps {
+  value: Date | undefined
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (date: Date | undefined) => void
+}
+
+const DatePickerButton = ({ value, open, onOpenChange, onSelect }: DatePickerButtonProps) => (
+  <Popover open={open} onOpenChange={onOpenChange}>
+    <PopoverTrigger asChild>
+      <button
+        type="button"
+        className={[
+          "flex w-full items-center justify-between rounded-[10px] border-[1.5px] border-[#b8afa6] bg-[#fff8f2]",
+          "px-[13px] py-[10px] text-[13.5px] font-medium",
+          "shadow-[0_1px_3px_rgba(100,88,76,0.10)] transition",
+          "hover:border-[#8a7e74] hover:bg-[#fff4ec] hover:shadow-[0_2px_8px_rgba(100,88,76,0.14)]",
+          value ? "text-[#2c2820]" : "text-[#6e6258]",
+        ].join(" ")}
+      >
+        <span>{value ? format(value, "MMM d, yyyy") : "Select date"}</span>
+        <CalendarIcon />
+      </button>
+    </PopoverTrigger>
+    {/* align="start" anchors the popover below the trigger button,
+        preventing it from jumping to the top-left corner of the viewport */}
+    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={value}
+        defaultMonth={value}
+        captionLayout="dropdown"
+        onSelect={(date) => {
+          onSelect(date)
+          onOpenChange(false)
+        }}
+      />
+    </PopoverContent>
+  </Popover>
+)
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export const BookingForm = ({ id }: { id: string }) => {
   const [startDate, setStartDate] = React.useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = React.useState<Date | undefined>(undefined)
+  const [startOpen, setStartOpen] = React.useState(false)
+  const [endOpen, setEndOpen] = React.useState(false)
   const [activeChip, setActiveChip] = React.useState<string | null>(null)
-  const startDateRef = React.useRef<HTMLInputElement>(null)
-  const endDateRef = React.useRef<HTMLInputElement>(null)
   const router = useRouter()
 
   const form = useForm<BookingFormInput, any, BookingFormData>({
@@ -81,8 +134,6 @@ export const BookingForm = ({ id }: { id: string }) => {
       endTime: "11:30",
     },
   })
-
-  const attendees = form.watch("expectedAttendees") as number
 
   const onSubmit = async (values: BookingFormData) => {
     try {
@@ -131,22 +182,12 @@ export const BookingForm = ({ id }: { id: string }) => {
     }
   }
 
-  const openDatePicker = (ref: React.RefObject<HTMLInputElement>) => {
-    if (!ref.current) return
-    if ("showPicker" in ref.current) {
-      ;(ref.current as any).showPicker()
-    } else {
-      ref.current.click()
-    }
-  }
-
   const handleChipClick = (chip: string) => {
     setActiveChip(chip)
     form.setValue("purpose", chip, { shouldValidate: true })
   }
 
   return (
-    // ── Outer wrapper ──────────────────────────────────────────────────────────
     <div className="flex min-h-[600px] items-center justify-center rounded-2xl bg-[#e8e4df] p-10 relative overflow-hidden">
 
       {/* Ambient glow */}
@@ -175,13 +216,13 @@ export const BookingForm = ({ id }: { id: string }) => {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* Purpose */}
+          {/* ── Purpose ── */}
           <Controller
             name="purpose"
             control={form.control}
             render={({ field, fieldState }) => (
               <div>
-                <Label>Purpose</Label>
+                <FieldLabel>Purpose</FieldLabel>
                 <textarea
                   {...field}
                   placeholder="Describe the purpose of your booking…"
@@ -192,8 +233,6 @@ export const BookingForm = ({ id }: { id: string }) => {
                   }}
                   className="w-full resize-none rounded-[10px] border border-[#cdc7c0] bg-[#ebe7e2] px-[13px] py-[10px] text-[14px] text-[#2c2820] placeholder:text-[#b8b0a8] outline-none transition focus:border-[#a09080] focus:bg-[#e8e2dc] focus:ring-2 focus:ring-[#a09080]/10"
                 />
-
-                {/* Quick-pick chips */}
                 <div className="mt-2 flex flex-wrap gap-[7px]">
                   {PURPOSE_CHIPS.map((chip) => (
                     <button
@@ -211,30 +250,24 @@ export const BookingForm = ({ id }: { id: string }) => {
                     </button>
                   ))}
                 </div>
-
                 {fieldState.invalid && (
-                  <p className="mt-[5px] text-[11.5px] text-[#b05840]">
-                    {fieldState.error?.message}
-                  </p>
+                  <p className="mt-[5px] text-[11.5px] text-[#b05840]">{fieldState.error?.message}</p>
                 )}
               </div>
             )}
           />
 
-          {/* Expected Attendees */}
+          {/* ── Expected Attendees ── */}
           <Controller
             name="expectedAttendees"
             control={form.control}
             render={({ field, fieldState }) => (
               <div>
-                <Label>Expected attendees</Label>
+                <FieldLabel>Expected attendees</FieldLabel>
                 <div className="flex items-center overflow-hidden rounded-[10px] border-[1.5px] border-[#b8afa6] bg-[#fff8f2] shadow-[0_1px_3px_rgba(100,88,76,0.09)] w-fit">
                   <button
                     type="button"
-                    onClick={() => {
-                      const val = Math.max(0, (field.value as number) - 1)
-                      field.onChange(val)
-                    }}
+                    onClick={() => field.onChange(Math.max(0, (field.value as number) - 1))}
                     className="flex h-10 w-10 items-center justify-center text-[17px] text-[#6e6258] transition hover:bg-[#f0e8e0] hover:text-[#2c2820]"
                   >
                     −
@@ -260,39 +293,25 @@ export const BookingForm = ({ id }: { id: string }) => {
             )}
           />
 
-          {/* Start date + time */}
+          {/* ── Start ── */}
           <div>
-            <SectionLabel>Start</SectionLabel>
+            <SectionDivider>Start</SectionDivider>
             <div className="grid grid-cols-2 gap-[10px]">
               <div>
-                <Label>Date</Label>
-                <button
-                  type="button"
-                  onClick={() => openDatePicker(startDateRef)}
-                  className={[
-                    "flex w-full items-center justify-between rounded-[10px] border-[1.5px] border-[#b8afa6] bg-[#fff8f2] px-[13px] py-[10px] text-[13.5px] font-medium shadow-[0_1px_3px_rgba(100,88,76,0.10)] transition hover:border-[#8a7e74] hover:bg-[#fff4ec] hover:shadow-[0_2px_8px_rgba(100,88,76,0.14)]",
-                    startDate ? "text-[#2c2820]" : "text-[#6e6258]",
-                  ].join(" ")}
-                >
-                  <span>{startDate ? format(startDate, "MMM d, yyyy") : "Select date"}</span>
-                  <CalendarIcon />
-                </button>
-                <input
-                  ref={startDateRef}
-                  type="date"
-                  className="hidden"
-                  onChange={(e) => {
-                    if (e.target.value) setStartDate(new Date(e.target.value + "T00:00:00"))
-                  }}
+                <FieldLabel>Date</FieldLabel>
+                <DatePickerButton
+                  value={startDate}
+                  open={startOpen}
+                  onOpenChange={setStartOpen}
+                  onSelect={setStartDate}
                 />
               </div>
-
               <Controller
                 name="startTime"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div>
-                    <Label>Time</Label>
+                    <FieldLabel>Time</FieldLabel>
                     <input
                       {...field}
                       type="time"
@@ -308,39 +327,25 @@ export const BookingForm = ({ id }: { id: string }) => {
             </div>
           </div>
 
-          {/* End date + time */}
+          {/* ── End ── */}
           <div>
-            <SectionLabel>End</SectionLabel>
+            <SectionDivider>End</SectionDivider>
             <div className="grid grid-cols-2 gap-[10px]">
               <div>
-                <Label>Date</Label>
-                <button
-                  type="button"
-                  onClick={() => openDatePicker(endDateRef)}
-                  className={[
-                    "flex w-full items-center justify-between rounded-[10px] border-[1.5px] border-[#b8afa6] bg-[#fff8f2] px-[13px] py-[10px] text-[13.5px] font-medium shadow-[0_1px_3px_rgba(100,88,76,0.10)] transition hover:border-[#8a7e74] hover:bg-[#fff4ec] hover:shadow-[0_2px_8px_rgba(100,88,76,0.14)]",
-                    endDate ? "text-[#2c2820]" : "text-[#6e6258]",
-                  ].join(" ")}
-                >
-                  <span>{endDate ? format(endDate, "MMM d, yyyy") : "Select date"}</span>
-                  <CalendarIcon />
-                </button>
-                <input
-                  ref={endDateRef}
-                  type="date"
-                  className="hidden"
-                  onChange={(e) => {
-                    if (e.target.value) setEndDate(new Date(e.target.value + "T00:00:00"))
-                  }}
+                <FieldLabel>Date</FieldLabel>
+                <DatePickerButton
+                  value={endDate}
+                  open={endOpen}
+                  onOpenChange={setEndOpen}
+                  onSelect={setEndDate}
                 />
               </div>
-
               <Controller
                 name="endTime"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div>
-                    <Label>Time</Label>
+                    <FieldLabel>Time</FieldLabel>
                     <input
                       {...field}
                       type="time"
@@ -356,7 +361,7 @@ export const BookingForm = ({ id }: { id: string }) => {
             </div>
           </div>
 
-          {/* Submit */}
+          {/* ── Submit ── */}
           <button
             type="submit"
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-[12px] bg-[#3a3028] px-4 py-[14px] text-[14.5px] font-medium tracking-[0.04em] text-[#e8e0d5] shadow-[0_4px_16px_rgba(40,32,24,0.18)] transition hover:bg-[#2c2820] active:scale-[0.98]"
