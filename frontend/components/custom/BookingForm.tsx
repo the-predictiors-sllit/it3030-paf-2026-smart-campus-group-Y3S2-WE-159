@@ -24,7 +24,7 @@ type BookingFormData = z.infer<typeof bookingSchema>
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PURPOSE_CHIPS = ["Team meeting", "Workshop", "Client presentation", "Training"]
+const PURPOSE_CHIPS = ["Group Meeting", "Workshop", "Presentation", "Lab Viva","Lab Exam", "Other"]
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
