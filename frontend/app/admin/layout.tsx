@@ -152,7 +152,7 @@ export default function RootLayout({
                         </div>
                     </SidebarBody>
                 </Sidebar>
-                <div className="flex-1 overflow-auto px-5  flex items-center justify-center">
+                <div className="flex-1 overflow-auto px-5 flex ">
                     {children}
                 </div>
             </div>
