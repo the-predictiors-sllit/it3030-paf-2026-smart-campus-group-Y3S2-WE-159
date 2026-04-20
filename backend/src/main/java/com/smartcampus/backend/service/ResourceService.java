@@ -140,7 +140,7 @@ public class ResourceService {
         resourceRepository.deleteById(resourceId);
     }
 
-        public ListResourcesResponse listResources(String type, String status, Integer minCapacity, int page, int limit) {
+        public ListResourcesResponse listResources(String search,String type, String status, Integer minCapacity, int page, int limit) {
         int validatedPage = Math.max(page, 1);
         int validatedLimit = Math.max(limit, 1);
         
@@ -164,6 +164,13 @@ public class ResourceService {
             resources = resourceRepository.findByMinCapacity(minCapacity);
         } else {
             resources = resourceRepository.findAll();
+        }
+        
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.toLowerCase();
+            resources = resources.stream()
+                .filter(r -> r.getName().toLowerCase().contains(searchLower))
+                .collect(Collectors.toList());
         }
         
         // Sort by name
