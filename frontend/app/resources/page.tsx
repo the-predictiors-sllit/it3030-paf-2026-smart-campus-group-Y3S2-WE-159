@@ -50,6 +50,12 @@ const page = () => {
     const [resources, setResources] = useState<Resource[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    //4/20
+    const [searchInput, setSearchInput] = useState("");
+    const [activeSearch, setActiveSearch] = useState("");
+    //
+
+
     useEffect(() => {
         const fetchResources = async () => {
             setLoading(true);
@@ -59,6 +65,10 @@ const page = () => {
                     limit: '10',
                     // add other prams here
                 });
+
+                if (activeSearch) {
+                    query.append('search', activeSearch); 
+                }
 
                 const response = await fetch(`/api/resources?${query.toString()}`, {
                     method: 'GET',
@@ -86,22 +96,31 @@ const page = () => {
         };
 
         fetchResources();
-    }, []);
+    }, [activeSearch]);
+
+    const handleSearchClick = () => {
+        setActiveSearch(searchInput);
+    };
 
     if (loading) return <div><LoadingData/></div>;
     if (!resources) return <div><EmptyData/></div>;
     return (
         <main className='flex flex-row'>
             <div className="basis-1/3">Create a filter option here</div>
-            <div className="basis-1/3">
+            <div className="basis-2/3">
                 <section className='flex flex-col'>
                     <div> Add search option here use this template
                         <Field orientation="horizontal">
-                            <Input type="search" placeholder="Search..." />
-                            <Button>Search</Button>
+                            <Input 
+                                type="search" 
+                                placeholder="Search..." 
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                            />
+                            <Button onClick={handleSearchClick}>Search</Button>
                         </Field>
                     </div>
-                    <div>{resources.map((resource) => (
+                    <div className="grid gap-4">{resources.map((resource) => (
                         <ResourceCard
                             key={resource.id}
                             id={resource.id}

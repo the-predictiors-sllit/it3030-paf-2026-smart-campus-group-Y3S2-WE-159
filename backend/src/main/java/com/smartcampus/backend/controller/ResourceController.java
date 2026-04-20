@@ -45,6 +45,7 @@ public class ResourceController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<ListResourcesResponse>> listResources(
+        @RequestParam(value = "search", required = false) String search,
         @RequestParam(value = "type", required = false) String type,
         @RequestParam(value = "status", required = false) String status,
         @RequestParam(value = "minCapacity", required = false) Integer minCapacity,
@@ -52,24 +53,24 @@ public class ResourceController {
         @RequestParam(value = "limit", defaultValue = "10") int limit) {
         
         try {
-            ListResourcesResponse resources = resourceService.listResources(type, status, minCapacity, page, limit);
+            ListResourcesResponse resources = resourceService.listResources(search,type, status, minCapacity, page, limit);
             
             // Build response with HATEOAS links
             ApiResponse<ListResourcesResponse> response = new ApiResponse<>("success", resources);
             
             // Self link
-            String queryString = buildQueryString(type, status, minCapacity, resources.getPage(), limit);
+            String queryString = buildQueryString(search,type, status, minCapacity, resources.getPage(), limit);
             response.addLink("self", createLink("/api/resources" + queryString));
             
             // Next link (if not on last page)
             if (resources.getTotalPages() > 0 && resources.getPage() < resources.getTotalPages()) {
-                String nextQuery = buildQueryString(type, status, minCapacity, resources.getPage() + 1, limit);
+                String nextQuery = buildQueryString(search,type, status, minCapacity, resources.getPage() + 1, limit);
                 response.addLink("next", createLink("/api/resources" + nextQuery));
             }
             
             // Previous link (if not on first page)
             if (resources.getPage() > 1) {
-                String prevQuery = buildQueryString(type, status, minCapacity, resources.getPage() - 1, limit);
+                String prevQuery = buildQueryString(search,type, status, minCapacity, resources.getPage() - 1, limit);
                 response.addLink("prev", createLink("/api/resources" + prevQuery));
             }
             
@@ -209,9 +210,14 @@ public class ResourceController {
         /**
      * Helper to build query string for pagination.
      */
-    private String buildQueryString(String type, String status, Integer minCapacity, int page, int limit) {
+    private String buildQueryString(String search,String type, String status, Integer minCapacity, int page, int limit) {
         StringBuilder sb = new StringBuilder("?");
         boolean first = true;
+
+        if (search != null && !search.isEmpty()) {
+            sb.append("search=").append(search);
+            first = false;
+        }
         
         if (type != null && !type.isEmpty()) {
             sb.append("type=").append(type);
@@ -242,6 +248,3 @@ public class ResourceController {
         return ResponseEntity.status(status).body(error);
     }
 }
-
-
-
