@@ -10,7 +10,8 @@
 		"minio",
 		"minio-init",
 		"backend",
-		"frontend"
+		"frontend",
+		"ai_python"
 	],
 	// "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/backend",
 	"workspaceFolder": "/app",

@@ -1,9 +1,12 @@
-FROM node:24-alpine
+# FROM node:24-alpine
+FROM node:25-trixie-slim
 WORKDIR /app
 
-# Install necessary utilities
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk update && apk add git bash
+RUN apt-get update && apt-get install -y \
+    git \
+    bash \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy files as root (default)
 COPY package.json package-lock.json* ./

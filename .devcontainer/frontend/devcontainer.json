@@ -5,12 +5,13 @@
 	],
 	"service": "frontend",
 	"runServices": [
-		"database",
+		"database", 
 		"db-init",
 		"minio",
 		"minio-init",
 		"backend",
-		"frontend"
+		"frontend",
+		"ai_python"
 	],
 	// "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/frontend",
 	"workspaceFolder": "/app",

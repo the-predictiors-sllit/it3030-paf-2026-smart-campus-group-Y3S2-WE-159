@@ -1,8 +1,10 @@
-import React from 'react'
+import LangSmithChat from '@/components/custom/LangSmithChat'
+import { auth0 } from '@/lib/auth0';
 
-const page = () => {
+const page = async () => {
+  const { token } = await auth0.getAccessToken();
   return (
-    <div>page</div>
+    <LangSmithChat token={token}/>
   )
 }
 

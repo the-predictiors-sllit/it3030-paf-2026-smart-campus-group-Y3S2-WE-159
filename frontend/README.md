@@ -19,3 +19,6 @@ To use the components in your app, import them as follows:
 ```tsx
 import { Button } from "@/components/ui/button";
 ```
+
+
+  "dev": "next dev --webpack -H 0.0.0.0",

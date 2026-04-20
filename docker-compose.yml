@@ -121,14 +121,28 @@ services:
     env_file:
       - .env
     volumes:
+      # - ./frontend:/app
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
+
+    # # this option will not update the host pc code
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./frontend
+    #       target: /app
+    #       ignore:
+    #         - node_modules/
+    #         - .next/
     environment:
       # - DEBUG=true
       - NEXT_PUBLIC_API_URL=http://localhost:8118
       - INTERNAL_API_URL=http://backend:8080
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+      # - CHOKIDAR_USEPOLLING=true
+      # - WATCHPACK_POLLING=true
+      # - NEXT_TURBO_WATCH=true
       - HOSTNAME=0.0.0.0
       # - WATCHPACK_POLLING=1000
       # - CHOKIDAR_USEPOLLING=true
@@ -139,6 +153,40 @@ services:
         # condition: service_healthy # Only starts frontend after backend passes healthcheck
         condition: service_started # to fix the backend crashing issue
 
+
+  ai_python:
+    build: 
+      context: ./ai_python
+      dockerfile: Dockerfile
+    container_name: smart_campus_ai_python
+    ports:
+      - "2024:2024"
+    volumes:
+      - ./ai_python:/app
+      - smart_campus_ai_python_venv:/app/.venv
+    env_file:
+      - .env
+    environment:
+      - MODEL_NAME=qwen3.5:2b-q8_0
+      - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - BACKEND_API_URL=http://backend:8080
+      - API_KEY=ollama
+      - USER_AGENT=ai_python/1.0
+      - UV_LINK_MODE=copy
+      # - LOG_LEVEL=DEBUG
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - PAF_project_network
+    # healthcheck:
+    #   test: [ "CMD", "curl", "-f", "http://localhost:8290/docs" ]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 120s
+
+
 networks:
   PAF_project_network:
     driver: bridge
@@ -147,3 +195,4 @@ volumes:
   smart_campus_mssql_data:
   smart_campus_maven_repo:
   smart_campus_minio_data:
+  smart_campus_ai_python_venv:

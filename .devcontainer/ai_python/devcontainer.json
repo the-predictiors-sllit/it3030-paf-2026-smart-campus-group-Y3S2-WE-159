@@ -1,0 +1,32 @@
+{
+	"name": "Ai_python Dev Container",
+	"dockerComposeFile": [
+		"../../docker-compose.yml"
+	],
+	"service": "ai_python",
+	"runServices": [
+		"database",
+		"db-init",
+		"minio",
+		"minio-init",
+		"backend",
+		"frontend",
+		"ai_python"
+	],
+	"workspaceFolder": "/app",
+	"shutdownAction": "stopCompose",
+	"remoteUser": "root",
+	"overrideCommand": false,
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.black-formatter",
+				"meta.pyrefly",
+				"ms-toolsai.jupyter",
+				"esbenp.prettier-vscode",
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	}
+}

@@ -1,7 +1,6 @@
-
 import { auth0 } from '@/lib/auth0'
 import { SERVER_API_URL } from '@/lib/api-client';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { HomeImageSlider } from '@/components/custom/HomeImageSlider';
 import { HomeAdminPageAccessBtn } from '@/components/custom/HomeAdminPageAccessBtn';
 
