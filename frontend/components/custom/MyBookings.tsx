@@ -93,6 +93,38 @@ export const MyBookings = () => {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Inside export const MyBookings = () => { ...
+
+  const handleCancel = async (bookingId: string) => {
+    // Confirmation ensures accidental clicks don't trigger the backend
+    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          status: "CANCELLED", 
+          reason: "User cancelled request" 
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Booking cancelled");
+      
+        // Real-time state update prevents unnecessary page reloads
+        setBookings(prev => prev.map(b => 
+          b.id === bookingId ? { ...b, status: "CANCELLED" } : b
+        ));
+      } else {
+        toast.error("Unable to cancel booking at this time.");
+      }
+    } catch (error) {
+      toast.error("Connection error. Check your network.");
+    }
+    };
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -255,7 +287,9 @@ export const MyBookings = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10">
+                            <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10"
+                            onClick={() => handleCancel(booking.id)}
+                            >
                               Cancel booking
                             </DropdownMenuItem>
                           </DropdownMenuContent>
