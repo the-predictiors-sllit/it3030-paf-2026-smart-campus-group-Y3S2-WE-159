@@ -66,4 +66,23 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate
     );
+
+    //analytics page part below 
+    // 1. Most Booked Resources
+    @Query("SELECT b.resource.name, COUNT(b) FROM Booking b GROUP BY b.resource.name ORDER BY COUNT(b) DESC")
+    List<Object[]> findMostBookedResources();
+
+    // 2. Approval Rate
+    @Query("SELECT b.status, COUNT(b) FROM Booking b GROUP BY b.status")
+    List<Object[]> findStatusDistribution();
+
+    // 3. Trends for last 7 days
+    @Query(value = "SELECT DATE(start_time) as day, COUNT(*) as count FROM bookings " +
+            "WHERE start_time >= CURRENT_DATE - INTERVAL 7 DAY " +
+            "GROUP BY day ORDER BY day", nativeQuery = true)
+    List<Object[]> findBookingTrendsLast7Days();
+
+    // 4. Peak Hours (Heatmap logic: starts per hour)
+    @Query("SELECT HOUR(b.startTime), COUNT(b) FROM Booking b GROUP BY HOUR(b.startTime) ORDER BY HOUR(b.startTime)")
+    List<Object[]> findPeakHours();
 }
