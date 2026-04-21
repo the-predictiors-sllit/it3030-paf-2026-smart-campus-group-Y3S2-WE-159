@@ -49,10 +49,17 @@ const page = () => {
     const [resources, setResources] = useState<Resource[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    //4/20
     const [searchInput, setSearchInput] = useState("");
     const [activeSearch, setActiveSearch] = useState("");
-    //
+
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    //add filter states
+    const [selectedType, setSelectedType] = useState<string>("ALL");
+    const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+    const [minCapacity, setMinCapacity] = useState<string>("");
+
 
 
     useEffect(() => {
@@ -60,14 +67,17 @@ const page = () => {
             setLoading(true);
             try {
                 const query = new URLSearchParams({
-                    page: '1',
+                    page: String(page),
                     limit: '10',
-                    // add other prams here
+                    search: activeSearch,
                 });
 
                 if (activeSearch) {
                     query.append('search', activeSearch); 
                 }
+                if (selectedType !== "ALL") query.append('type', selectedType);
+                if (selectedStatus !== "ALL") query.append('status', selectedStatus);
+                if (minCapacity) query.append('minCapacity', minCapacity);
 
                 const response = await fetch(`/api/resources?${query.toString()}`, {
                     method: 'GET',
@@ -81,6 +91,7 @@ const page = () => {
 
                 if (result.status === "success" && result.data) {
                     setResources(result.data.items);
+                    setTotalPages(result.data.totalPages);
                 } else if (result.error) {
                     toast.error(result.error.message);
                 } else {
@@ -95,7 +106,28 @@ const page = () => {
         };
 
         fetchResources();
-    }, [activeSearch]);
+    }, [page, activeSearch, selectedType, selectedStatus, minCapacity]);
+
+// Helper to generate page numbers
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            pages.push(1);
+            if (page > 3) pages.push('...');
+            
+            for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+                pages.push(i);
+            }
+            
+            if (page < totalPages - 2) pages.push('...');
+            pages.push(totalPages);
+        }
+        return pages;
+    };
 
     const handleSearchClick = () => {
         setActiveSearch(searchInput);
@@ -105,7 +137,62 @@ const page = () => {
     if (!resources) return <div><EmptyData/></div>;
     return (
         <main className='flex flex-row'>
-            <div className="basis-1/3">Create a filter option here</div>
+            <div className="basis-1/3">Create a filter option   
+                {/* Type Filter */}
+                <div>
+                    <label className="text-sm font-medium">Resource Type</label>
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="All Types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">All Types</SelectItem>
+                            <SelectItem value="ROOM">Room</SelectItem>
+                            <SelectItem value="LAB">Lab</SelectItem>
+                            <SelectItem value="EQUIPMENT">Equipment</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                    <label className="text-sm font-medium">Status</label>
+                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">All Status</SelectItem>
+                            <SelectItem value="ACTIVE">Active</SelectItem>
+                            <SelectItem value="OUT_OF_SERVICE">Out of Service</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Capacity Filter */}
+                <div>
+                    <label className="text-sm font-medium">Min Capacity</label>
+                    <Input 
+                        type="number"
+                        placeholder="e.g. 20"
+                        value={minCapacity}
+                        onChange={(e) => setMinCapacity(e.target.value)}
+                    />
+                </div>
+
+                {/* Reset Filters */}
+                <Button 
+                    variant="outline"
+                    onClick={() => {
+                        setSelectedType("ALL");
+                        setSelectedStatus("ALL");
+                        setMinCapacity("");
+                        setPage(1);
+                    }}
+                >
+                    Clear Filters
+                </Button>
+            </div>
             <div className="basis-2/3">
                 <section className='flex flex-col'>
                     <div> Add search option here use this template
@@ -115,6 +202,11 @@ const page = () => {
                                 placeholder="Search..." 
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                    setActiveSearch(searchInput);
+                                    }
+                                }}
                             />
                             <Button onClick={handleSearchClick}>Search</Button>
                         </Field>
@@ -128,28 +220,47 @@ const page = () => {
                             status={resource.status}
                         />
                     ))}</div>
-                    <div> Add Pagination option here to navigate product list use this below template.
+                    <div> 
                         <Pagination>
                             <PaginationContent>
                                 <PaginationItem>
-                                    <PaginationPrevious href="#" />
+                                    <PaginationPrevious 
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (page > 1) setPage(page - 1);
+                                        }}
+                                        className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+                                    />
                                 </PaginationItem>
+                                {getPageNumbers().map((pageNum, idx) => (
+                                    <PaginationItem key={idx}>
+                                        {pageNum === '...' ? (
+                                            <PaginationEllipsis />
+                                        ) : (
+                                            <PaginationLink 
+                                                href="#"
+                                                isActive={page === pageNum}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    if (typeof pageNum === 'number') setPage(pageNum);
+                                                }}
+                                            >
+                                                {pageNum}
+                                            </PaginationLink>
+                                        )}
+                                    </PaginationItem>
+                                ))}
+                                
                                 <PaginationItem>
-                                    <PaginationLink href="#">1</PaginationLink>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationLink href="#" isActive>
-                                        2
-                                    </PaginationLink>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationLink href="#">3</PaginationLink>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationEllipsis />
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationNext href="#" />
+                                    <PaginationNext 
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (page < totalPages) setPage(page + 1);
+                                        }}
+                                        className={page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                                    />
                                 </PaginationItem>
                             </PaginationContent>
                         </Pagination>
