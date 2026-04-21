@@ -26,37 +26,93 @@ import {
 import { toast } from "sonner";
 import { Loader2, TrendingUp, Users, Calendar, CheckCircle2 } from "lucide-react";
 
+type ApiTupleStringNumber = [string, number];
+type ApiTupleNumberNumber = [number, number];
+
+interface AnalyticsApiResponse {
+    peakHours: ApiTupleNumberNumber[];
+    resources: ApiTupleStringNumber[];
+    statusDistribution: ApiTupleStringNumber[];
+    trends: ApiTupleStringNumber[];
+}
+
+interface AnalyticsViewData {
+    resources: { name: string; count: number }[];
+    status: { name: string; value: number }[];
+    trends: { date: string; count: number }[];
+    metrics: {
+        total: number;
+        approved: number;
+        pending: number;
+        rejected: number;
+        busiestHour: string;
+    };
+}
+
 // Theme-compatible color palette using your CSS variables
 const CHART_COLORS = [
-    'hsl(var(--primary))',
-    'hsl(var(--chart-2, 210 20% 50%))',
-    'hsl(var(--chart-3, 160 60% 45%))',
-    'hsl(var(--muted-foreground))',
+    'var(--primary)',
+    'var(--secondary)',
+    'var(--accent)',
+    'var(--muted)',
+    'var(--destructive)',
 ];
 
-export const AnalyticsPage = () => {
-    const [data, setData] = useState<any>(null);
+export const AnalyticsPage = ({token}:{token:string}) => {
+    const [data, setData] = useState<AnalyticsViewData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
             try {
-                const res = await fetch('/api/analytics/bookings/summary');
+                const endpoint = '/api/analytics/bookings/summary';
+                const res = await fetch(endpoint, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 if (!res.ok) throw new Error("Failed to synchronize analytics");
-                const json = await res.json();
+                const json: AnalyticsApiResponse = await res.json();
+
+                const today = new Date();
+                const last7Days = Array.from({ length: 7 }, (_, idx) => {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - (6 - idx));
+                    return d;
+                });
+
+                const trendMap = new Map(
+                    (json.trends || []).map(([date, count]) => [date, count])
+                );
+
+                const normalizedTrends = last7Days.map((dateObj) => {
+                    const isoDate = dateObj.toISOString().slice(0, 10);
+                    return {
+                        date: dateObj.toLocaleDateString('en-US', { weekday: 'short' }),
+                        count: trendMap.get(isoDate) || 0,
+                    };
+                });
+
+                const statusMap = new Map((json.statusDistribution || []).map(([name, count]) => [name, count]));
+                const peakHour = [...(json.peakHours || [])].sort((a, b) => b[1] - a[1])[0]?.[0];
+                const formatHour = (hour?: number) => {
+                    if (hour === undefined || hour === null) return 'N/A';
+                    const suffix = hour >= 12 ? 'PM' : 'AM';
+                    const normalized = hour % 12 === 0 ? 12 : hour % 12;
+                    return `${normalized}:00 ${suffix}`;
+                };
                 
                 // Transformation layer for Recharts format
                 setData({
-                    resources: json.resources.map((i: any) => ({ name: i[0], count: i[1] })),
-                    status: json.statusDistribution.map((i: any) => ({ name: i[0], value: i[1] })),
-                    trends: json.trends.map((i: any) => ({ 
-                        date: new Date(i[0]).toLocaleDateString('en-US', { weekday: 'short' }), 
-                        count: i[1] 
-                    })),
-                    // High-level summary metrics for the top row
+                    resources: (json.resources || []).map(([name, count]) => ({ name, count })),
+                    status: (json.statusDistribution || []).map(([name, value]) => ({ name, value })),
+                    trends: normalizedTrends,
                     metrics: {
-                        total: json.statusDistribution.reduce((acc: number, curr: any) => acc + curr[1], 0),
-                        approved: json.statusDistribution.find((i: any) => i[0] === 'APPROVED')?.[1] || 0,
+                        total: (json.statusDistribution || []).reduce((acc, [, value]) => acc + value, 0),
+                        approved: statusMap.get('APPROVED') || 0,
+                        pending: statusMap.get('PENDING') || 0,
+                        rejected: statusMap.get('REJECTED') || 0,
+                        busiestHour: formatHour(peakHour),
                     }
                 });
             } catch (err) {
@@ -66,7 +122,7 @@ export const AnalyticsPage = () => {
             }
         };
         fetchAnalytics();
-    }, []);
+    }, [token]);
 
     if (isLoading) {
         return (
@@ -77,21 +133,23 @@ export const AnalyticsPage = () => {
         );
     }
 
+    const hasAnyData = (data?.metrics.total || 0) > 0;
+
     return (
-        <div className="space-y-6">
+        <div className="h-full w-full space-y-6">
             {/* 1. Quick Stats Row */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full w-full bg-card border-border shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{data?.metrics.total}</div>
-                        <p className="text-xs text-muted-foreground">+4% from last week</p>
+                        <p className="text-xs text-muted-foreground">Total booking records captured</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full w-full bg-card border-border shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Approval Volume</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -101,63 +159,78 @@ export const AnalyticsPage = () => {
                         <p className="text-xs text-muted-foreground">Processed by Admin</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full w-full bg-card border-border shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Busiest Day</CardTitle>
+                        <CardTitle className="text-sm font-medium">Peak Hour</CardTitle>
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">Wednesday</div>
-                        <p className="text-xs text-muted-foreground">Peak resource usage</p>
+                        <div className="text-2xl font-bold">{data?.metrics.busiestHour}</div>
+                        <p className="text-xs text-muted-foreground">Highest booking start volume</p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card border-border shadow-sm">
+                <Card className="h-full w-full bg-card border-border shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                        <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">42</div>
-                        <p className="text-xs text-muted-foreground">Current system session</p>
+                        <div className="text-2xl font-bold">{data?.metrics.pending}</div>
+                        <p className="text-xs text-muted-foreground">Rejected: {data?.metrics.rejected}</p>
                     </CardContent>
                 </Card>
             </div>
 
             {/* 2. Charts Row */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-7">
+            {!hasAnyData ? (
+                <Card className="h-full w-full bg-card border-border">
+                    <CardHeader>
+                        <CardTitle className="text-lg">No data yet</CardTitle>
+                        <CardDescription>
+                            Booking analytics will appear here once requests are created and processed.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="min-h-65 flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground text-center">
+                            Start by creating bookings to populate trends, status distribution, and resource popularity.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-7 auto-rows-fr">
                 {/* Weekly Trends Line Chart */}
-                <Card className="lg:col-span-4 bg-card border-border">
+                <Card className="lg:col-span-4 bg-card border-border h-full w-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Booking Velocity</CardTitle>
                         <CardDescription>Daily request volume over the last 7 days</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[350px] pl-2">
+                    <CardContent className="flex-1 min-h-70 pl-2">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={data?.trends}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                                 <XAxis 
                                     dataKey="date" 
-                                    stroke="hsl(var(--muted-foreground))" 
+                                    stroke="var(--muted-foreground)" 
                                     fontSize={12} 
                                     tickLine={false} 
                                     axisLine={false} 
                                 />
                                 <YAxis 
-                                    stroke="hsl(var(--muted-foreground))" 
+                                    stroke="var(--muted-foreground)" 
                                     fontSize={12} 
                                     tickLine={false} 
                                     axisLine={false} 
                                 />
                                 <Tooltip 
-                                    contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                                    itemStyle={{ color: 'hsl(var(--popover-foreground))', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: 'var(--popover)', borderColor: 'var(--border)', borderRadius: '8px' }}
+                                    itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
                                 />
                                 <Line 
                                     type="monotone" 
                                     dataKey="count" 
-                                    stroke="hsl(var(--primary))" 
+                                    stroke="var(--primary)" 
                                     strokeWidth={3} 
-                                    dot={{ fill: 'hsl(var(--primary))', r: 4 }} 
+                                    dot={{ fill: 'var(--secondary)', r: 4 }} 
                                     activeDot={{ r: 6, strokeWidth: 0 }}
                                 />
                             </LineChart>
@@ -166,12 +239,12 @@ export const AnalyticsPage = () => {
                 </Card>
 
                 {/* Status Distribution Pie Chart */}
-                <Card className="lg:col-span-3 bg-card border-border">
+                <Card className="lg:col-span-3 bg-card border-border h-full w-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Approval Efficiency</CardTitle>
                         <CardDescription>Ratio of approved vs rejected requests</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[350px]">
+                    <CardContent className="flex-1 min-h-70">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie 
@@ -181,7 +254,7 @@ export const AnalyticsPage = () => {
                                     paddingAngle={5} 
                                     dataKey="value"
                                 >
-                                    {data?.status.map((_: any, index: number) => (
+                                    {data?.status.map((_, index: number) => (
                                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -193,31 +266,31 @@ export const AnalyticsPage = () => {
                 </Card>
 
                 {/* Popular Resources Bar Chart */}
-                <Card className="lg:col-span-7 bg-card border-border">
+                <Card className="lg:col-span-7 bg-card border-border h-full w-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="text-lg">Resource Popularity</CardTitle>
                         <CardDescription>Most frequently booked campus assets</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
+                    <CardContent className="flex-1 min-h-65">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data?.resources}>
                                 <XAxis 
                                     dataKey="name" 
-                                    stroke="hsl(var(--muted-foreground))" 
+                                    stroke="var(--muted-foreground)" 
                                     fontSize={12} 
                                     tickLine={false} 
                                     axisLine={false} 
                                 />
                                 <YAxis 
-                                    stroke="hsl(var(--muted-foreground))" 
+                                    stroke="var(--muted-foreground)" 
                                     fontSize={12} 
                                     tickLine={false} 
                                     axisLine={false} 
                                 />
-                                <Tooltip cursor={{fill: 'hsl(var(--muted)/0.2)'}} />
+                                <Tooltip cursor={{ fill: 'var(--secondary)', fillOpacity: 0.18 }} />
                                 <Bar 
                                     dataKey="count" 
-                                    fill="hsl(var(--primary))" 
+                                    fill="var(--accent)" 
                                     radius={[4, 4, 0, 0]} 
                                     barSize={40}
                                 />
@@ -226,6 +299,7 @@ export const AnalyticsPage = () => {
                     </CardContent>
                 </Card>
             </div>
+            )}
         </div>
     );
 };
