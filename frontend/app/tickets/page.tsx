@@ -2,8 +2,8 @@ import { MyTickets } from '@/components/custom/MyTickets'
 
 const page = () => {
   return (
-    <main>
-      <MyTickets/>
+    <main className="space-y-4">
+      <MyTickets />
     </main>
   )
 }

@@ -51,7 +51,7 @@ const ticketSchema = z.object({
     priority: z.enum(["LOW", "MEDIUM", "HIGH"], {
         message: "Please select a priority level"
     }),
-    description: z.string().min(5, "Please provide a description"),
+    description: z.string().min(10, "Please provide a description that had more than 10 characters."),
     contactPhone: z.string()
         .length(10, "Phone number must be exactly 10 digits")
         .regex(/^\d+$/, "Phone number must only contain numbers")
