@@ -14,25 +14,49 @@ export async function GET(request: NextRequest) {
 
     const { token } = await auth0.getAccessToken();
     const search = request.nextUrl.search;
-    const Api_Url = getBaseUrl();
+    const apiUrl = getBaseUrl();
 
-    const backendRes = await fetch(`${Api_Url}/api/upload/view${search}`, {
+    if (!request.nextUrl.searchParams.get('fileName')) {
+      return NextResponse.json(
+        { status: 'error', message: 'fileName query parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    let backendRes = await fetch(`${apiUrl}/api/upload/view${search}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-        // No Content-Type needed for a GET request
       },
       cache: 'no-store',
     });
+
+    // Some backend setups expect multipart form-data semantics for this endpoint.
+    // Fetch does not support GET with body, so retry via POST with empty multipart data.
+    if (!backendRes.ok && backendRes.status >= 500) {
+      const fallbackForm = new FormData();
+      fallbackForm.append('file', new Blob([]), '');
+      fallbackForm.append('folder', '');
+
+      backendRes = await fetch(`${apiUrl}/api/upload/view${search}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: fallbackForm,
+        cache: 'no-store',
+      });
+    }
+
     if (backendRes.status === 404) {
-    return NextResponse.redirect(new URL('/brokenImageLink.png', request.url));
-}
+      return NextResponse.redirect(new URL('/brokenImageLink.png', request.url));
+    }
 
     if (!backendRes.ok) {
-        return NextResponse.json(
-            { status: 'error', message: 'Failed to fetch image from storage' },
-            { status: backendRes.status }
-        );
+      return NextResponse.json(
+        { status: 'error', message: 'Failed to fetch image from storage' },
+        { status: backendRes.status }
+      );
     }
 
     // Use arrayBuffer for binary data like images
@@ -44,7 +68,7 @@ export async function GET(request: NextRequest) {
         // Forward the exact content-type from MinIO (image/png, image/jpeg, etc.)
         'Content-Type': backendRes.headers.get('content-type') || 'image/png',
         // Optional: Cache control for better performance
-        'Cache-Control': 'public, max-age=3600', 
+        'Cache-Control': 'public, max-age=3600',
       },
     });
   } catch (error: unknown) {

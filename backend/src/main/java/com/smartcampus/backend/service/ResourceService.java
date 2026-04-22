@@ -280,7 +280,8 @@ public class ResourceService {
             resource.getType(),
             resource.getCapacity(),
             resource.getLocation(),
-            resource.getStatus()
+            resource.getStatus(),
+            resource.getImageUrl()
         );
         
         // Add HATEOAS links

@@ -79,6 +79,7 @@ export function ImageUpload({
 
                 {/* Upload Button */}
                 <Button
+                    type="button"
                     onClick={openFileDialog}
                     size="sm"
                     className={cn(isDragging && "animate-bounce")}
@@ -114,10 +115,11 @@ export function ImageUpload({
 
                                 {/* Remove Button */}
                                 <Button
+                                    type="button"
                                     onClick={() => removeFile(fileItem.id)}
                                     variant="outline"
                                     size="icon"
-                                    className="absolute -end-2 -top-2 size-5 rounded-full opacity-0 shadow-md transition-opacity group-hover/item:opacity-100"
+                                    className="absolute -inset-e-2 -top-2 size-5 rounded-full opacity-0 shadow-md transition-opacity group-hover/item:opacity-100"
                                 >
                                     <XIcon className="size-3" />
                                 </Button>

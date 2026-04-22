@@ -29,7 +29,7 @@ public class Resource {
     @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "ImageUrl", length = 255)
+    @Column(name = "ImageUrl", length = 500)
     private String imageUrl;
 
     @Column(name = "CreatedAt", nullable = false)

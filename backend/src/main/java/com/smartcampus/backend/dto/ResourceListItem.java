@@ -13,6 +13,7 @@ public class ResourceListItem {
     private Integer capacity;
     private String location;
     private String status;
+    private String imageUrl;
     @JsonProperty("_links")
     private Map<String, Object> _links;
 
@@ -22,13 +23,14 @@ public class ResourceListItem {
     }
 
     public ResourceListItem(String id, String name, String type, Integer capacity, 
-                           String location, String status) {
+                           String location, String status, String imageUrl) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.capacity = capacity;
         this.location = location;
         this.status = status;
+        this.imageUrl = imageUrl;
         this._links = new HashMap<>();
     }
 
@@ -45,6 +47,8 @@ public class ResourceListItem {
     public void setLocation(String location) { this.location = location; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Map<String, Object> get_links() { return _links; }
     public void set_links(Map<String, Object> _links) { this._links = _links; }
 
