@@ -1,4 +1,6 @@
+import { AnalyticsPage } from '@/components/custom/AnalyticsPage';
 import { BentoCard, BentoGrid } from '@/components/ui/bento-grid';
+import { auth0 } from '@/lib/auth0';
 import { Dot } from "lucide-react";
 
 
@@ -52,17 +54,22 @@ const features = [
 ];
 
 
-const page = () => {
+const page = async() => {
+
+
+    const { token } = await auth0.getAccessToken();
     return (
         <div className="flex h-full w-full items-center justify-center p-4">
-            <section className="w-full">
+            {/* <section className="w-full">
                 <div className='mb-10'><h1 className=' text-2xl'>Manage Bookings</h1></div>
                 <BentoGrid className="lg:grid-rows-1 h-[800px]">
                     {features.map((feature, index) => (
                         <BentoCard key={index} {...feature} />
                     ))}
                 </BentoGrid>
-            </section>
+            </section> */}
+
+            <AnalyticsPage token={token}/>
         </div>
     )
 }
