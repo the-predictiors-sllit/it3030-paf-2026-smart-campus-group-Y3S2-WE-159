@@ -52,7 +52,7 @@ export default async function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <NavigationBar />
-            <main className="max-w-8xl mx-auto px-0 p-4 md:p-6">
+            <main className="max-w-8xl mx-auto px-0 ">
               {children}
             </main>
             <Toaster />
