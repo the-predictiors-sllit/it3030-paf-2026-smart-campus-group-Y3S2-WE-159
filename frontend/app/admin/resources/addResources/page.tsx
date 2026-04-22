@@ -1,8 +1,12 @@
 
-const page = () => {
+import { AddResourceForm } from "@/components/custom/AddResourceForm"
+
+export default function AddResourcesPage() {
   return (
-    <div>addResources</div>
+    <div className="w-full min-h-screen bg-background p-6">
+      <div className="max-w-full">
+        <AddResourceForm />
+      </div>
+    </div>
   )
 }
-
-export default page
