@@ -3,16 +3,39 @@
 import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import MarkdownPreview from "@/components/custom/MarkdownPreview"
 import { TicketAttachmentView } from "@/components/custom/TicketAttachmentView"
 import { toast } from "sonner"
-import { Loader2, AlertCircle, CheckCircle, XCircle, Clock, User, Phone, FileText, MapPin, ArrowLeft } from "lucide-react"
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  User,
+  Phone,
+  FileText,
+  MapPin,
+  ArrowLeft,
+} from "lucide-react"
 import dynamic from "next/dynamic"
 import { CommentCard } from "@/components/custom/commentCard"
 
@@ -43,21 +66,55 @@ interface TicketData {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  OPEN: { label: "Open", className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400" },
-  IN_PROGRESS: { label: "In Progress", className: "bg-blue-500/10 text-blue-700 dark:text-blue-400" },
-  RESOLVED: { label: "Resolved", className: "bg-green-500/10 text-green-700 dark:text-green-400" },
-  CLOSED: { label: "Closed", className: "bg-gray-500/10 text-gray-700 dark:text-gray-400" },
-  REJECTED: { label: "Rejected", className: "bg-red-500/10 text-red-700 dark:text-red-400" },
+  OPEN: {
+    label: "Open",
+    className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+  },
+  IN_PROGRESS: {
+    label: "In Progress",
+    className: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  },
+  RESOLVED: {
+    label: "Resolved",
+    className: "bg-green-500/10 text-green-700 dark:text-green-400",
+  },
+  CLOSED: {
+    label: "Closed",
+    className: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
+  },
+  REJECTED: {
+    label: "Rejected",
+    className: "bg-red-500/10 text-red-700 dark:text-red-400",
+  },
 }
 
-const priorityConfig: Record<string, { label: string; className: string; icon: string }> = {
+const priorityConfig: Record<
+  string,
+  { label: string; className: string; icon: string }
+> = {
   LOW: { label: "Low", className: "bg-muted text-foreground", icon: "📍" },
-  MEDIUM: { label: "Medium", className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400", icon: "⚠️" },
-  HIGH: { label: "High", className: "bg-orange-500/10 text-orange-700 dark:text-orange-400", icon: "🔥" },
-  CRITICAL: { label: "Critical", className: "bg-red-500/10 text-red-700 dark:text-red-400", icon: "🚨" },
+  MEDIUM: {
+    label: "Medium",
+    className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+    icon: "⚠️",
+  },
+  HIGH: {
+    label: "High",
+    className: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
+    icon: "🔥",
+  },
+  CRITICAL: {
+    label: "Critical",
+    className: "bg-red-500/10 text-red-700 dark:text-red-400",
+    icon: "🚨",
+  },
 }
 
-export default function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TicketDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const router = useRouter()
   const { id } = use(params)
   const ticketId = decodeURIComponent(id)
@@ -73,7 +130,8 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string>("")
 
-  const ticketLocation = ticket?.location || ticket?.resource?.location || "Location not available"
+  const ticketLocation =
+    ticket?.location || ticket?.resource?.location || "Location not available"
   const ticketDescription = ticket?.description || "No description provided"
 
   // Fetch ticket details
@@ -96,7 +154,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     const fetchTicket = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/tickets/${encodeURIComponent(ticketId)}`)
+        const response = await fetch(
+          `/api/tickets/${encodeURIComponent(ticketId)}`
+        )
         if (!response.ok) throw new Error("Failed to fetch ticket")
 
         const data = await response.json()
@@ -121,7 +181,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
   const fetchComments = async (id: string) => {
     try {
       setLoadingComments(true)
-      const response = await fetch(`/api/tickets/${encodeURIComponent(id)}/comments`)
+      const response = await fetch(
+        `/api/tickets/${encodeURIComponent(id)}/comments`
+      )
       if (!response.ok) throw new Error("Failed to fetch comments")
 
       const data = await response.json()
@@ -139,10 +201,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     if (!ticket || !newStatus) return
 
     const trimmedResolutionNotes = resolutionNotes.trim()
-    const requiresResolutionNotes = ["RESOLVED", "CLOSED", "REJECTED"].includes(newStatus)
+    const requiresResolutionNotes = ["RESOLVED", "CLOSED", "REJECTED"].includes(
+      newStatus
+    )
 
     if (requiresResolutionNotes && !trimmedResolutionNotes) {
-      toast.error("Resolution notes are required before moving a ticket to this status")
+      toast.error(
+        "Resolution notes are required before moving a ticket to this status"
+      )
       return
     }
 
@@ -160,11 +226,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         payload.resolutionNotes = trimmedResolutionNotes
       }
 
-      const response = await fetch(`/api/tickets/${encodeURIComponent(ticket.id)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
+      const response = await fetch(
+        `/api/tickets/${encodeURIComponent(ticket.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      )
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -172,7 +241,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
         try {
           const parsedError = JSON.parse(errorText)
-          errorMessage = parsedError?.error?.message || parsedError?.message || errorText || errorMessage
+          errorMessage =
+            parsedError?.error?.message ||
+            parsedError?.message ||
+            errorText ||
+            errorMessage
         } catch {
           errorMessage = errorText || errorMessage
         }
@@ -226,9 +299,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   if (loading) {
     return (
-      <div className="min-h-screen flex w-full items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+      <div className="flex min-h-screen w-full items-center justify-center">
+        <div className="space-y-4 text-center">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Loading ticket details...</p>
         </div>
       </div>
@@ -237,7 +310,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   if (!ticket) {
     return (
-      <div className="min-h-screen flex w-full items-center justify-center">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <Card className="p-8">
           <p className="text-muted-foreground">Ticket not found</p>
         </Card>
@@ -250,7 +323,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="min-h-screen w-full">
-      <div className="w-full space-y-8 p-6 ">
+      <div className="w-full space-y-8 p-6">
         {/* Header with Back Button */}
         <div className="space-y-4">
           <Button
@@ -266,10 +339,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <h1 className="text-4xl font-bold tracking-tight">{ticket.resource?.name || "No Resource"}</h1>
+                <h1 className="text-4xl font-bold tracking-tight">
+                  {ticket.resource?.name || "No Resource"}
+                </h1>
                 <p className="text-muted-foreground">Ticket ID: {ticket.id}</p>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex gap-2 flex-nowrap">
                 <Badge variant="outline" className={statusOption.className}>
                   {statusOption.label}
                 </Badge>
@@ -285,8 +360,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="images">Images ({ticket.attachments?.length || 0})</TabsTrigger>
-            <TabsTrigger value="comments">Comments ({comments.length})</TabsTrigger>
+            <TabsTrigger value="images">
+              Images ({ticket.attachments?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="comments">
+              Comments ({comments.length})
+            </TabsTrigger>
             <TabsTrigger value="manage">Manage</TabsTrigger>
           </TabsList>
 
@@ -294,30 +373,34 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           <TabsContent value="details" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{ticket.resource?.name || "No Resource"}</CardTitle>
+                <CardTitle className="text-lg">
+                  {ticket.resource?.name || "No Resource"}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Category</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Category
+                    </p>
                     <p className="text-base">{ticket.category}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       Location
                     </p>
                     <p className="text-base">{ticketLocation}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <Phone className="h-4 w-4" />
                       Contact Phone
                     </p>
                     <p className="text-base">{ticket.contactPhone}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <User className="h-4 w-4" />
                       Reported By
                     </p>
@@ -326,25 +409,27 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                  <p className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
                     <FileText className="h-4 w-4" />
                     Description
                   </p>
-                  <div className="bg-muted p-3 rounded-md">
+                  <div className="rounded-md bg-muted p-3">
                     <MarkdownPreview content={ticketDescription} />
                   </div>
                 </div>
 
                 {ticket.resolutionNotes && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Resolution Notes</p>
-                    <div className="bg-muted p-3 rounded-md border border-border/50">
+                    <p className="mb-2 text-sm font-medium text-muted-foreground">
+                      Resolution Notes
+                    </p>
+                    <div className="rounded-md border border-border/50 bg-muted p-3">
                       <MarkdownPreview content={ticket.resolutionNotes} />
                     </div>
                   </div>
                 )}
 
-                <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/30">
+                <div className="space-y-1 border-t border-border/30 pt-2 text-xs text-muted-foreground">
                   <p>Created: {new Date(ticket.createdAt).toLocaleString()}</p>
                   <p>Updated: {new Date(ticket.updatedAt).toLocaleString()}</p>
                 </div>
@@ -375,40 +460,61 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 {/* Add Comment */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Add Comment</label>
-                  <MDEditor
-                    value={newComment}
-                    onChange={(val) => setNewComment(val || "")}
-                    height={200}
-                    preview="edit"
-                    hideToolbar={false}
-                    visibleDragbar={false}
-                    textareaProps={{ disabled: postingComment }}
-                  />
+                  <Card>
+                    <CardContent>
+                      <MDEditor
+                        value={newComment}
+                        onChange={(val) => setNewComment(val || "")}
+                        height={200}
+                        preview="edit"
+                        hideToolbar={false}
+                        visibleDragbar={false}
+                        textareaProps={{ disabled: postingComment }}
+                        style={{
+                          backgroundColor: "var(--color-card)",
+                        }}
+                        previewOptions={{
+                          style: { backgroundColor: "transparent" },
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
                   <Button
                     onClick={handleAddComment}
                     disabled={!newComment.trim() || postingComment}
                     size="sm"
                   >
-                    {postingComment && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {postingComment && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Post Comment
                   </Button>
                 </div>
 
                 <div className="border-t border-border/30 pt-4">
                   {loadingComments ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">Loading comments...</p>
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      Loading comments...
+                    </p>
                   ) : comments.length > 0 ? (
                     <div className="space-y-4">
                       {comments.map((comment) => (
                         <CommentCard
                           key={comment.id}
-                          userName={comment.authorName || comment.userName || comment.authorId || "Anonymous"}
+                          userName={
+                            comment.authorName ||
+                            comment.userName ||
+                            comment.authorId ||
+                            "Anonymous"
+                          }
                           comment={comment.text || comment.comment || ""}
                         />
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No comments yet</p>
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      No comments yet
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -420,7 +526,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <Card>
               <CardHeader>
                 <CardTitle>Update Ticket</CardTitle>
-                <CardDescription>Modify ticket status and resolution</CardDescription>
+                <CardDescription>
+                  Modify ticket status and resolution
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -440,15 +548,27 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Resolution Notes (Markdown)</label>
-                  <MDEditor
-                    value={resolutionNotes}
-                    onChange={(val) => setResolutionNotes(val || "")}
-                    height={300}
-                    preview="edit"
-                    hideToolbar={false}
-                    visibleDragbar={false}
-                  />
+                  <label className="text-sm font-medium">
+                    Resolution Notes (Markdown)
+                  </label>
+                  <Card>
+                    <CardContent>
+                      <MDEditor
+                        value={resolutionNotes}
+                        onChange={(val) => setResolutionNotes(val || "")}
+                        height={300}
+                        preview="edit"
+                        hideToolbar={false}
+                        visibleDragbar={false}
+                        style={{
+                          backgroundColor: "var(--color-card)",
+                        }}
+                        previewOptions={{
+                          style: { backgroundColor: "transparent" },
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <Button
@@ -457,7 +577,9 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   size="lg"
                   className="w-full"
                 >
-                  {updatingStatus && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {updatingStatus && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Update Ticket Status
                 </Button>
               </CardContent>

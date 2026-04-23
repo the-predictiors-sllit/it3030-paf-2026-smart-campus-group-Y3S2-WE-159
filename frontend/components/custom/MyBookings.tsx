@@ -26,6 +26,19 @@ import { Spinner } from "../ui/spinner"
 import { EmptyData } from "./EmptyData"
 import { LoadingData } from "./LoadingData"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { IconTrash } from "@tabler/icons-react"
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Link {
@@ -96,34 +109,32 @@ export const MyBookings = () => {
   // Inside export const MyBookings = () => { ...
 
   const handleCancel = async (bookingId: string) => {
-    // Confirmation ensures accidental clicks don't trigger the backend
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
-
     try {
       const response = await fetch(`/api/bookings/${bookingId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          status: "CANCELLED", 
-          reason: "User cancelled request" 
+        body: JSON.stringify({
+          status: "CANCELLED",
+          reason: "User cancelled request",
         }),
-      });
+      })
 
       if (response.ok) {
-        toast.success("Booking cancelled");
-      
+        toast.success("Booking cancelled")
+
         // Real-time state update prevents unnecessary page reloads
-        setBookings(prev => prev.map(b => 
-          b.id === bookingId ? { ...b, status: "CANCELLED" } : b
-        ));
+        setBookings((prev) =>
+          prev.map((b) =>
+            b.id === bookingId ? { ...b, status: "CANCELLED" } : b
+          )
+        )
       } else {
-        toast.error("Unable to cancel booking at this time.");
+        toast.error("Unable to cancel booking at this time.")
       }
     } catch (error) {
-      toast.error("Connection error. Check your network.");
+      toast.error("Connection error. Check your network.")
     }
-    };
-
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -169,16 +180,6 @@ export const MyBookings = () => {
 
   return (
     <div className="min-h-screen">
-      {/* ── Page header ── */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          My bookings
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View and manage all your space reservations.
-        </p>
-      </div>
-
       {/* ── Toolbar ── */}
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
@@ -201,7 +202,7 @@ export const MyBookings = () => {
               onClick={() => setStatusFilter(s)}
               variant={statusFilter === s ? "default" : "outline"}
               size="sm"
-              className="rounded-full min-w-15 text-xs p-2"
+              className="min-w-15 rounded-full p-2 text-xs"
             >
               {s.charAt(0) + s.slice(1).toLowerCase()}
             </Button>
@@ -268,9 +269,9 @@ export const MyBookings = () => {
 
                     {/* Status */}
                     <TableCell>
-                      <Badge variant={getStatusVariant(booking.status)} >
+                      <Badge variant={getStatusVariant(booking.status)}>
                         {booking.status == "PENDING" && <Spinner />}
-                        
+
                         {booking.status.charAt(0) +
                           booking.status.slice(1).toLowerCase()}
                       </Badge>
@@ -279,21 +280,33 @@ export const MyBookings = () => {
                     {/* Actions */}
                     <TableCell className="text-right">
                       {booking.status === "PENDING" && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <MoreHorizontalIcon className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size={"icon"}>
+                              <IconTrash />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10"
-                            onClick={() => handleCancel(booking.id)}
-                            >
-                              Cancel booking
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you sure you want to cancel this booking?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete your request from our
+                                servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleCancel(booking.id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </TableCell>
                   </TableRow>

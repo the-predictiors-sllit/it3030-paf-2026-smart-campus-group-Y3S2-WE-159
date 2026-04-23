@@ -11,7 +11,7 @@ const page = () => {
     const id = params.id as string;
     
     return (
-        <main className="space-y-6">
+        <main className="space-y-6 p-5">
             {/* Navigation */}
             <div className="flex items-center gap-2">
                 <Button 

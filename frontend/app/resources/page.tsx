@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InputGroup } from "@/components/ui/input-group"
+import { Separator } from "@/components/ui/separator"
 
 interface Resource {
   id: string
@@ -188,7 +189,7 @@ export default function ResourcesPage() {
   const hasPreviousPage = useMemo(() => currentPage > 1, [currentPage])
 
   return (
-    <main className="space-y-6">
+    <main className="space-y-6 p-5">
       <section className="space-y-1">
         <h1 className="text-2xl font-semibold md:text-3xl">
           Resource Directory
@@ -198,9 +199,9 @@ export default function ResourcesPage() {
         </p>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-12">
-        <aside className="lg:col-span-4 xl:col-span-3">
-          <Card className="lg:sticky lg:top-4">
+      <section className="lg:flex lg:flex-row gap-3">
+        <aside className="basis-1/4">
+          <Card className="lg:sticky lg:top-20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <SlidersHorizontal className="size-4" />
@@ -211,25 +212,25 @@ export default function ResourcesPage() {
 
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="resource-search">Search</Label>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="resource-search"
-                    type="search"
-                    value={searchInput}
-                    placeholder="Search by name"
-                    className="pl-9"
-                    onChange={(event) => setSearchInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        applySearch()
-                      }
-                    }}
-                  />
+                <div className="space-y-2">
+                  <Label htmlFor="resource-search">Search</Label>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="resource-search"
+                      type="search"
+                      value={searchInput}
+                      placeholder="Search by name"
+                      className="pl-9"
+                      onChange={(event) => setSearchInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          applySearch()
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
                 <div className="space-y-2">
                   <Label>Resource Type</Label>
                   <Select
@@ -239,7 +240,7 @@ export default function ResourcesPage() {
                       setSelectedType(value)
                     }}
                   >
-                    <SelectTrigger className="w-65 lg:w-45">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -260,7 +261,7 @@ export default function ResourcesPage() {
                       setSelectedStatus(value)
                     }}
                   >
-                    <SelectTrigger className="w-65 lg:w-45">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,42 +273,39 @@ export default function ResourcesPage() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="min-capacity">Minimum Capacity</Label>
-                <Input
-                  id="min-capacity"
-                  type="number"
-                  min={0}
-                  placeholder="e.g. 20"
-                  value={minCapacity}
-                  onChange={(event) => {
-                    setCurrentPage(1)
-                    setMinCapacity(event.target.value)
-                  }}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="min-capacity">Minimum Capacity</Label>
+                  <Input
+                    id="min-capacity"
+                    type="number"
+                    min={0}
+                    placeholder="e.g. 20"
+                    value={minCapacity}
+                    onChange={(event) => {
+                      setCurrentPage(1)
+                      setMinCapacity(event.target.value)
+                    }}
+                  />
+                </div>
+                <Separator />
+                <div>
+                  <Button className="mb-3 w-full" onClick={applySearch}>
+                    Apply Search
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={clearAllFilters}
+                  >
+                    Clear
+                  </Button>
+                </div>
               </div>
             </CardContent>
-
-            <CardFooter>
-              <div className="flex gap-2">
-                <Button className="w-full" onClick={applySearch}>
-                  Apply Search
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={clearAllFilters}
-                >
-                  Clear
-                </Button>
-              </div>
-            </CardFooter>
           </Card>
         </aside>
 
-        <div className="space-y-4 lg:col-span-8 xl:col-span-9">
+        <div className="basis-3/4">
           {loading ? (
             <div className="grid gap-4 md:grid-cols-2">
               {Array.from({ length: 5 }).map((_, index) => (

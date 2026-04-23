@@ -43,6 +43,8 @@ const PURPOSE_CHIPS = [
   "Group Meeting",
   "Workshop",
   "Presentation",
+  "Final Exam",
+  "Mid Exam",
   "Lab Viva",
   "Lab Exam",
   "Other",

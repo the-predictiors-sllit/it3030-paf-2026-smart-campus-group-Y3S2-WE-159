@@ -266,8 +266,8 @@ export const MyTickets = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {filteredTickets.map((ticket) => (
-              <Card key={ticket.id} className="hover:border-primary/50 hover:shadow-md transition-all">
-                <CardHeader className="pb-3">
+              <Card key={ticket.id} className="hover:shadow-lg transition-all">
+                <CardHeader className="">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-1">
                       <CardTitle className="line-clamp-2 cursor-pointer hover:text-primary transition-colors">
@@ -314,20 +314,21 @@ export const MyTickets = () => {
                   <Separator />
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2 w-fit">
                     <Button
                       size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() => router.push(`/tickets/myticket/${ticket.id}`)}
                     >
                       View Details
                     </Button>
                     <Button
                       variant="outline"
+                      className="w-full"
                       size="sm"
                       onClick={() => ticket.resource && router.push(`/resources/${ticket.resource.id}`)}
                       disabled={!ticket.resource}>
-                      Resource
+                      View Resource
                     </Button>
                   </div>
                 </CardContent>

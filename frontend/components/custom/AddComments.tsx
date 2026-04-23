@@ -213,7 +213,7 @@ export const AddComments = ({ ticketId }: { ticketId: string }) => {
                   {isMounted ? (
                     <div
                       data-color-mode={colorMode}
-                      className={`rounded-lg border ${
+                      className={`rounded-lg border p-5 ${
                         fieldState.invalid ? "border-destructive" : "border-border"
                       }`}
                     >

@@ -18,10 +18,10 @@ const page = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background p-5">
 
       {/* Page body */}
-      <div className="mx-auto  px-6 py-8">
+      <div className="mx-auto">
         <section className="flex gap-8 items-start">
 
           {/* Main content */}

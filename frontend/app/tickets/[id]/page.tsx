@@ -7,9 +7,8 @@ const page = () => {
   const params = useParams();
   const id = params.id as string;
   return (
-    <main>
-      <h1 className=' text-2xl'>Submit a ticket</h1>
-      <section className='flex flex-row'>
+    <main className='p-5'>
+      <section className='flex flex-row gap-3'>
         <div className='basis-3/5'>
           <ResourceView id={id} />
         </div>
