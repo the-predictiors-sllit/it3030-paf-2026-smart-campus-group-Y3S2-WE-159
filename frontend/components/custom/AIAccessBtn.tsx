@@ -9,7 +9,7 @@ export const AIAccessBtn = () => {
 
   return (
     <RainbowButton
-      className="rounded-full hover:-translate-y-2 transition-all delay-200 ease-in-out "
+      className="rounded-full hover:-translate-y-2 transition-all delay-200 ease-in-out active:translate-1"
       variant={"outline"}
       onClick={() => router.push("/ai")}
     >

@@ -19,8 +19,12 @@ const links = [
     href: "/contactus",
   },
   {
-    title: "Policies",
-    href: "/policies",
+    title: "Policy",
+    href: "/policy",
+  },
+    {
+    title: "Notifications",
+    href: "/notifications",
   },
 ]
 
