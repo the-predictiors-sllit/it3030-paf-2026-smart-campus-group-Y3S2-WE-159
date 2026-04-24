@@ -1,6 +1,13 @@
 "use client"
 
-import { HTMLAttributes, memo, ReactNode, useMemo } from "react"
+import {
+  HTMLAttributes,
+  memo,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import {
   getColumnHeaderLabel,
   useDataGrid,
@@ -46,7 +53,12 @@ function DataGridColumnHeaderInner<TData, TValue>({
   visibility = false,
 }: DataGridColumnHeaderProps<TData, TValue>) {
   const { isLoading, table, props, recordCount } = useDataGrid()
+  const [isMounted, setIsMounted] = useState(false)
   const resolvedTitle = title ?? getColumnHeaderLabel(column)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const columnOrder = table.getState().columnOrder
   const columnVisibilityKey = JSON.stringify(table.getState().columnVisibility)
@@ -79,6 +91,8 @@ function DataGridColumnHeaderInner<TData, TValue>({
     "text-secondary-foreground/80 hover:bg-secondary data-[state=open]:bg-secondary hover:text-foreground data-[state=open]:text-foreground -ms-2 px-2 font-normal h-7 rounded-md",
     className
   )
+
+  const shouldDisableControls = isMounted && (isLoading || recordCount === 0)
 
   const sortIcon =
     canSort &&
@@ -284,7 +298,7 @@ function DataGridColumnHeaderInner<TData, TValue>({
             <Button
               variant="ghost"
               className={headerButtonClassName}
-              disabled={isLoading || recordCount === 0}
+              disabled={shouldDisableControls}
             >
               {icon && icon}
               {resolvedTitle}
@@ -317,7 +331,7 @@ function DataGridColumnHeaderInner<TData, TValue>({
         <Button
           variant="ghost"
           className={headerButtonClassName}
-          disabled={isLoading || recordCount === 0}
+          disabled={shouldDisableControls}
           onClick={handleSort}
         >
           {icon && icon}

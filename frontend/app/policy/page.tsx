@@ -47,7 +47,7 @@ The Smart Campus Operations Hub is provided "as-is." While we aim for 24/7 uptim
 const page = () => {
 
   return (
-    <div className="">
+    <div className="p-3">
 
     <MarkdownPreview content={policy} />
     </div>

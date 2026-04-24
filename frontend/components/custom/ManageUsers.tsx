@@ -49,100 +49,109 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { IconEdit, IconMessage2Share, IconTrashX } from "@tabler/icons-react"
+import { IconEdit, IconMessage2Share, IconTrashX, IconUserShield } from "@tabler/icons-react"
 import { AlertDialog, AlertDialogTrigger } from "../ui/alert-dialog"
 import { ButtonGroup } from "../ui/button-group"
 import { Dialog, DialogTrigger } from "../ui/dialog"
 import { Input } from "../ui/input"
 import { ManageUserDelete } from "./ManageUserDelete"
 import { ManageUserEditProfile } from "./ManageUserEditProfile"
+import { ManageUserEditRole } from "./ManageUserEditRole"
 import { ManageUserSendNotification } from "./ManageUserSendNotification"
+import { ManageUserAddNew } from "./ManageUserAddNew"
 
-interface linksParentProps {
-  method: string | string
-  href: string
-}
+// interface linksParentProps {
+//   method: string | string
+//   href: string
+// }
 
-interface linksProps {
-  remove_user_role: linksParentProps
-  update_user_details: linksParentProps
-  get_all_roles: linksParentProps
-  self: linksParentProps
-  get_user_role: linksParentProps
-  delete_user: linksParentProps
-  Assign_user_role: linksParentProps
-}
+// interface linksProps {
+//   remove_user_role: linksParentProps
+//   update_user_details: linksParentProps
+//   get_all_roles: linksParentProps
+//   self: linksParentProps
+//   get_user_role: linksParentProps
+//   delete_user: linksParentProps
+//   Assign_user_role: linksParentProps
+// }
 
 interface userProp {
-  userId: string
+  user_id: string
   name: string
   nickname: string | null
-  givenName: string | null
-  familyName: string | null
+  given_name: string | null
+  family_name: string | null
   email: string | null
   picture: string
-  emailVerified: boolean
-  createdAt: string | null
-  updatedAt: string | null
-  lastLogin: string
-  lastIp: string | null
-  loginsCount: number
-  _links: linksProps
+  email_verified: boolean
+  created_at: string | null
+  updated_at: string | null
+  last_login: string
+  last_ip: string | null
+  logins_count: number | null
 }
 
-interface roleProp {
-  id: string
-  name: string | null
-  description: string | null
-  _links: {
-    remove_user_role: linksParentProps
-    get_all_roles: linksParentProps
-    self: linksParentProps
-    Assign_user_role: linksParentProps
-  }
-}
+// interface roleProp {
+//   id: string
+//   name: string | null
+//   description: string | null
+//   _links: {
+//     remove_user_role: linksParentProps
+//     get_all_roles: linksParentProps
+//     self: linksParentProps
+//     Assign_user_role: linksParentProps
+//   }
+// }
 
-interface ApiUserResponseProp {
-  _links: {
-    self: linksParentProps
-    create_new_user: linksParentProps
-  }
-  data: {
-    items: userProp[]
-  }
-  error: {
-    code: string
-    message: string
-  } | null
-  status: string
-}
+// interface ApiUserResponseProp {
+//   _links: {
+//     self: linksParentProps
+//     create_new_user: linksParentProps
+//   }
+//   data: {
+//     items: userProp[]
+//   }
+//   error: {
+//     code: string
+//     message: string
+//   } | null
+//   status: string
+// }
 
-interface ApiUserRoleResponseProp {
-  _links: {
-    self: linksParentProps
-  }
-  data: {
-    items: roleProp[]
-  }
-  error: {
-    code: string
-    message: string
-  } | null
-  status: string
-}
+// interface ApiUserRoleResponseProp {
+//   _links: {
+//     self: linksParentProps
+//   }
+//   data: {
+//     items: roleProp[]
+//   }
+//   error: {
+//     code: string
+//     message: string
+//   } | null
+//   status: string
+// }
 
 // @RequestParam(defaultValue = "0") int page,
 // @RequestParam(defaultValue = "10") int perPage,
 // @RequestParam(required = false) String sort,
 // @RequestParam(required = false) String search)
 
-function ActionsCell({ row,token }: { row: Row<userProp>,token:string }) {
+function ActionsCell({
+  row,
+  token,
+  refreshData,
+}: {
+  row: Row<userProp>
+  token: string
+  refreshData: () => Promise<void>
+}) {
   const { copyToClipboard } = useCopyToClipboard()
   const handleCopyId = () => {
-    copyToClipboard(row.original.userId)
+    copyToClipboard(row.original.user_id)
 
     toast.success("Employee ID successfully copied", {
-      description: row.original.userId,
+      description: row.original.user_id,
     })
   }
 
@@ -154,7 +163,15 @@ function ActionsCell({ row,token }: { row: Row<userProp>,token:string }) {
             <IconEdit />
           </Button>
         </DialogTrigger>
-        <ManageUserEditProfile />
+        <ManageUserEditProfile user={row.original} token={token} onUpdateSuccessAction={refreshData} />
+      </Dialog>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="cursor-pointer">
+            <IconUserShield />
+          </Button>
+        </DialogTrigger>
+        <ManageUserEditRole user={row.original} token={token} onUpdateSuccess={refreshData} />
       </Dialog>
       <Dialog>
         <DialogTrigger asChild>
@@ -162,7 +179,7 @@ function ActionsCell({ row,token }: { row: Row<userProp>,token:string }) {
             <IconMessage2Share />
           </Button>
         </DialogTrigger>
-        <ManageUserSendNotification />
+        <ManageUserSendNotification user={row.original} onSendSuccess={refreshData} />
       </Dialog>
 
       <AlertDialog>
@@ -171,13 +188,17 @@ function ActionsCell({ row,token }: { row: Row<userProp>,token:string }) {
             <IconTrashX />
           </Button>
         </AlertDialogTrigger>
-        <ManageUserDelete deleteUrl={row.original._links.delete_user.href} token={token} />
+        <ManageUserDelete
+          userId={row.original.user_id}
+          token={token}
+          onDeleteSuccess={refreshData}
+        />
       </AlertDialog>
     </ButtonGroup>
   )
 }
 
-export function ManageUsers({token}:{token:string}) {
+export function ManageUsers({ token }: { token: string }) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -205,50 +226,42 @@ export function ManageUsers({token}:{token:string}) {
 
   // console.log(users)
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      setLoading(true)
-      try {
-        const params: Record<string, string> = {
-          page: pagination.pageIndex.toString(),
-          perPage: pagination.pageSize.toString(),
-        }
-
-        if (searchQuery) {
-          params.search = searchQuery
-        }
-        const query = new URLSearchParams(params)
-
-        console.log(query)
-
-        const response = await fetch(
-          `/api/auth0/management/users?${query.toString()}`,
-          {
-            method: "GET",
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`)
-        }
-
-        const result: ApiUserResponseProp = await response.json()
-
-        if (result.status === "success" && result.data) {
-          setUsers(result.data.items)
-        } else if (result.error) {
-          toast.error(result.error.message)
-        } else {
-          toast.warning("Received an unexpected response format.")
-        }
-      } catch (err: any) {
-        console.error("Error fetching data:", err)
-        toast.error(err.message || "Failed to connect to the server")
-      } finally {
-        setLoading(false)
+  const fetchResources = async () => {
+    setLoading(true)
+    try {
+      const params: Record<string, string> = {
+        page: pagination.pageIndex.toString(),
+        per_page: pagination.pageSize.toString(),
       }
-    }
 
+      if (searchQuery) {
+        params.q = searchQuery
+      }
+      const query = new URLSearchParams(params)
+
+      console.log(query)
+
+      const response = await fetch(
+        `/api/auth0/management/users?${query.toString()}`,
+        {
+          method: "GET",
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`)
+      }
+
+      const result: userProp[] = await response.json()
+      setUsers(result)
+    } catch (err: any) {
+      console.error("Error fetching data:", err)
+      toast.error(err.message || "Failed to connect to the server")
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() => {
     fetchResources()
   }, [pagination.pageIndex, pagination.pageSize, searchQuery])
 
@@ -281,11 +294,11 @@ export function ManageUsers({token}:{token:string}) {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <span> {row.original.userId}</span>
+              <span> {row.original.user_id}</span>
             </div>
           )
         },
-        size: 100,
+        size: 150,
         meta: {
           headerClassName: "",
           cellClassName: "text-start",
@@ -381,8 +394,8 @@ export function ManageUsers({token}:{token:string}) {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              {row.original.givenName ? (
-                <span> {row.original.givenName}</span>
+              {row.original.given_name ? (
+                <span> {row.original.given_name}</span>
               ) : (
                 <span className="text-xs opacity-50"> N/A </span>
               )}
@@ -413,8 +426,8 @@ export function ManageUsers({token}:{token:string}) {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              {row.original.familyName ? (
-                <span> {row.original.familyName}</span>
+              {row.original.family_name ? (
+                <span> {row.original.family_name}</span>
               ) : (
                 <span className="text-xs opacity-50"> N/A </span>
               )}
@@ -445,7 +458,7 @@ export function ManageUsers({token}:{token:string}) {
         cell: ({ row }) => {
           return (
             <div className="flex items-center">
-              {row.original.emailVerified ? (
+              {row.original.email_verified ? (
                 <Badge variant={"default"}>True</Badge>
               ) : (
                 <Badge variant={"outline"}>False</Badge>
@@ -478,7 +491,7 @@ export function ManageUsers({token}:{token:string}) {
           return (
             <div className="flex items-center gap-1.5">
               <div className="text-foreground">
-                {formatDateTime(row.original.createdAt)}
+                {formatDateTime(row.original.created_at)}
               </div>
             </div>
           )
@@ -508,7 +521,7 @@ export function ManageUsers({token}:{token:string}) {
           return (
             <div className="flex items-center gap-1.5">
               <div className="text-foreground">
-                {formatDateTime(row.original.updatedAt)}
+                {formatDateTime(row.original.updated_at)}
               </div>
             </div>
           )
@@ -538,7 +551,11 @@ export function ManageUsers({token}:{token:string}) {
           return (
             <div className="flex items-center gap-1.5">
               <div className="text-foreground">
-                {formatDateTime(row.original.lastLogin)}
+                {row.original.last_login ? (
+                  <span> {formatDateTime(row.original.last_login)}</span>
+                ) : (
+                  <span className="text-xs opacity-50"> N/A </span>
+                )}
               </div>
             </div>
           )
@@ -567,7 +584,13 @@ export function ManageUsers({token}:{token:string}) {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <div className="text-foreground">{row.original.lastIp}</div>
+              <div className="text-foreground">
+                {row.original.last_ip ? (
+                  <span> {row.original.last_ip}</span>
+                ) : (
+                  <span className="text-xs opacity-50"> N/A </span>
+                )}
+              </div>
             </div>
           )
         },
@@ -593,7 +616,13 @@ export function ManageUsers({token}:{token:string}) {
         ),
         cell: ({ row }) => {
           return (
-            <div className="text-foreground">{row.original.loginsCount}</div>
+            <div className="text-foreground">
+              {row.original.logins_count ? (
+                <span> {row.original.logins_count}</span>
+              ) : (
+                <span className="text-xs opacity-50"> 0 </span>
+              )}
+            </div>
           )
         },
         size: 150,
@@ -605,8 +634,10 @@ export function ManageUsers({token}:{token:string}) {
       {
         id: "actions",
         header: "",
-        cell: ({ row }) => <ActionsCell row={row} token={token} />,
-   
+        cell: ({ row }) => (
+          <ActionsCell row={row} token={token} refreshData={fetchResources} />
+        ),
+
         enableSorting: false,
         enableHiding: false,
         enableResizing: false,
@@ -701,7 +732,7 @@ export function ManageUsers({token}:{token:string}) {
                   Add new
                 </Button>
               </DialogTrigger>
-              <ManageUserEditProfile />
+              <ManageUserAddNew onCreateSuccess={fetchResources} />
             </Dialog>
           </CardAction>
         </CardHeader>

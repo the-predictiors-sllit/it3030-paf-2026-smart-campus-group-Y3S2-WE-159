@@ -14,16 +14,16 @@ import com.smartcampus.backend.service.Auth0UserSyncService;
 @RequestMapping("/api/admin/auth0")
 public class Auth0SyncController {
 
-    private final Auth0UserSyncService syncService;
+    // private final Auth0UserSyncService syncService;
 
-    public Auth0SyncController(Auth0UserSyncService syncService) {
-        this.syncService = syncService;
-    }
+    // public Auth0SyncController(Auth0UserSyncService syncService) {
+    //     this.syncService = syncService;
+    // }
 
-    @PostMapping("/sync-users")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> syncUsers() {
-        int count = syncService.syncAllUsers();
-        return ResponseEntity.ok(Map.of("status", "success", "syncedUsers", count));
-    }
+    // @PostMapping("/sync-users")
+    // @PreAuthorize("hasRole('ADMIN')")
+    // public ResponseEntity<?> syncUsers() {
+    //     int count = syncService.syncAllUsers();
+    //     return ResponseEntity.ok(Map.of("status", "success", "syncedUsers", count));
+    // }
 }

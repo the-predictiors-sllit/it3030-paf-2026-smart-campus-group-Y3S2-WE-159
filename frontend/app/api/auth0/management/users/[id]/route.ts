@@ -16,7 +16,7 @@ export async function GET(
         }
 
         const { token } = await auth0.getAccessToken();
-        
+
         const { id } = await params;
 
         const Api_Url = getBaseUrl();
@@ -68,7 +68,6 @@ export async function DELETE(
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                cache: 'no-store',
             }
         );
 
@@ -76,12 +75,15 @@ export async function DELETE(
             return new NextResponse(null, { status: 204 });
         }
 
+        const contentType = backendRes.headers.get('content-type') || '';
         const data = await backendRes.text();
 
-        return new NextResponse(data, {
+        return new NextResponse(data || null, {
             status: backendRes.status,
             headers: {
-                'Content-Type': backendRes.headers.get('content-type') || 'application/json',
+                'Content-Type': contentType.includes('json')
+                    ? 'application/json'
+                    : contentType || 'application/json',
             },
         });
     } catch (error: unknown) {
@@ -89,4 +91,52 @@ export async function DELETE(
         const message = error instanceof Error ? error.message : 'Internal Server Error';
         return NextResponse.json({ status: 'error', message }, { status: 500 });
     }
+}
+
+
+
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth0.getSession();
+    if (!session?.user) {
+      return NextResponse.json(
+        { status: 'error', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const { token } = await auth0.getAccessToken();
+    const { id } = await params;
+    const payload = await request.json();
+
+    const Api_Url = getBaseUrl();
+
+    const backendRes = await fetch(`${Api_Url}/api/auth0/management/users/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    });
+
+    const text = await backendRes.text();
+
+    return new NextResponse(text, {
+      status: backendRes.status,
+      headers: {
+        'Content-Type': backendRes.headers.get('content-type') || 'application/json',
+      },
+    });
+  } catch (error: unknown) {
+    console.error("User Creation Error:", error);
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ status: 'error', message }, { status: 500 });
+  }
+
 }

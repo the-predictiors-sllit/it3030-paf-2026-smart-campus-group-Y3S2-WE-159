@@ -1,84 +1,75 @@
-import { BentoCard, BentoGrid } from '@/components/ui/bento-grid';
+import { BentoCard, BentoGrid } from '@/components/ui/bento-grid'
 import {
-    BellIcon,
-    RadiobuttonIcon
-} from "@radix-ui/react-icons";
-import { BookDownIcon, TicketIcon } from "lucide-react";
-
+  IconBook2,
+  IconTicket,
+  IconPackages,
+  IconUserBolt,
+} from '@tabler/icons-react'
+import { AdminDashboardOverview } from '@/components/custom/AdminDashboardOverview'
 
 const features = [
-    {
-        Icon: RadiobuttonIcon,
-        name: "AI Chatbot",
-        description: "Engage in real-time conversations with our AI.",
-        href: "",
-        cta: "",
-        background: (
-            <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-
-        ),
-        className: "lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4",
-    },
-    {
-        Icon: BookDownIcon,
-        name: "My Bookings",
-        description: "Manage all of your resource bookings in one place.",
-        href: "/booking",
-        cta: "Learn more",
-        background: (
-            <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-        ),
-
-        className: "lg:col-start-1 lg:col-end-3 lg:row-start-1 lg:row-end-3",
-    },
-    {
-        Icon: TicketIcon,
-        name: "My Tickets",
-        description: "Track and view all of your incident tickets.",
-        href: "/tickets",
-        cta: "Learn more",
-        background: (
-            <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-        ),
-        className: "lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:row-end-3",
-    },
-    {
-        Icon: BellIcon,
-        name: "Notifications",
-        description: "Stay updated with your latest alerts and activities.",
-        href: "/notifications",
-        cta: "View all",
-        background: (
-            <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-        ),
-        className: "lg:col-start-2 lg:col-end-4 lg:row-start-3 lg:row-end-4",
-    },
-    {
-        Icon: BellIcon,
-        name: "Notifications",
-        description: "Stay updated with your latest alerts and activities.",
-        href: "/notifications",
-        cta: "View all",
-        background: (
-            <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-        ),
-        className: "lg:col-start-4 lg:col-end-5 lg:row-start-1 lg:row-end-4",
-    },
-];
+  {
+    Icon: IconBook2,
+    name: 'Bookings',
+    description: 'View booking analytics and approve requests across campus.',
+    href: '/admin/booking',
+    cta: 'Open bookings',
+    background: <div className="absolute inset-0 bg-primary/10" />,
+    className: 'lg:col-start-1 lg:col-end-3 lg:row-start-1 lg:row-end-3',
+  },
+  {
+    Icon: IconPackages,
+    name: 'Resources',
+    description: 'Track resource usage, manage inventory, and add new assets.',
+    href: '/admin/resources',
+    cta: 'Open resources',
+    background: <div className="absolute inset-0 bg-secondary/10" />,
+    className: 'lg:col-start-3 lg:col-end-4 lg:row-start-1 lg:row-end-3',
+  },
+  {
+    Icon: IconTicket,
+    name: 'Tickets',
+    description: 'Resolve incident tickets and monitor support activity.',
+    href: '/admin/tickets',
+    cta: 'Open tickets',
+    background: <div className="absolute inset-0 bg-destructive/10" />,
+    className: 'lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4',
+  },
+  {
+    Icon: IconUserBolt,
+    name: 'Users',
+    description: 'Review user activity, roles, and account health.',
+    href: '/admin/users',
+    cta: 'Open users',
+    background: <div className="absolute inset-0 bg-accent/10" />,
+    className: 'lg:col-start-2 lg:col-end-4 lg:row-start-3 lg:row-end-4',
+  },
+]
 
 const page = () => {
-    return (
-        <div className="flex h-full w-full items-center justify-center p-4">
-            <section className="w-full">
-                <div className='mb-10'><h1 className=' text-2xl'>Welcome!</h1></div>
-                <BentoGrid className="lg:grid-rows-1">
-                    {features.map((feature, index) => (
-                        <BentoCard key={index} {...feature} />
-                    ))}
-                </BentoGrid>
-            </section>
+  return (
+    <div className="flex h-full w-full items-center justify-center p-4">
+      <section className="w-full space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold">Admin dashboard</h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Real-time admin metrics and analytics for bookings, resources, tickets, and users.
+          </p>
         </div>
-    )
+
+        <AdminDashboardOverview />
+
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Quick actions</h2>
+          <BentoGrid className="lg:grid-rows-1">
+            {features.map((feature, index) => (
+              <BentoCard key={index} {...feature} />
+            ))}
+          </BentoGrid>
+        </div>
+      </section>
+    </div>
+  )
 }
 
 export default page

@@ -1,5 +1,6 @@
 import { auth0 } from "@/lib/auth0";
 import { NextResponse, type NextRequest } from "next/server";
+import { SERVER_API_URL } from "./lib/api-client";
 
 const PUBLIC_PATHS = ["/unauthorized"];
 
@@ -19,6 +20,29 @@ export async function proxy(request: NextRequest) {
   }
 
   const session = await auth0.getSession(request);
+
+
+  try {
+    const { token } = await auth0.getAccessToken()
+    console.log("getAccessToken " + token)
+    // console.log( "getAccessToken " + expiresAt )
+
+    // Keep backend user record in sync with Auth0 identity.
+    await fetch(`${SERVER_API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : ""
+
+    console.error("Failed to load backend profile: ", error)
+  }
+
+
 
   if (!session || !session.user) {
     const loginUrl = new URL("/auth/login", request.url);

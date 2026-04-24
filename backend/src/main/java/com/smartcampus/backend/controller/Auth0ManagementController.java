@@ -1,5 +1,6 @@
 package com.smartcampus.backend.controller;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import org.springframework.http.HttpHeaders;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.smartcampus.backend.config.Auth0ManagementProperties;
 import com.smartcampus.backend.dto.ApiResponse;
@@ -64,37 +66,64 @@ public class Auth0ManagementController {
         Auth0ManagementApiService authService;
 
         // get all Auth0UserResponse
+        // @GetMapping("/users")
+        // public ResponseEntity<ApiResponse<Map<String, Object>>>
+        // getUsers(Authentication authentication,
+        // @RequestParam(defaultValue = "0") int page,
+        // @RequestParam(defaultValue = "10") int perPage,
+        // @RequestParam(required = false) String sort,
+        // @RequestParam(required = false) String search) {
+
+        // // self link
+        // Map<String, Object> selfLink = new HashMap<>();
+        // selfLink.put("href", "/api/auth0/management/users");
+
+        // Map<String, Object> createNewUser = new HashMap<>();
+        // createNewUser.put("href", "/api/auth0/management/users");
+        // createNewUser.put("method", "POST");
+
+        // Map<String, Object> links = new HashMap<>();
+        // links.put("self", selfLink);
+        // links.put("create_new_user", createNewUser);
+
+        // List<Auth0UserDto> userList = authService.listOfAllUsers(page, perPage, sort,
+        // search);
+
+        // Map<String, Object> data = new HashMap<>();
+        // data.put("items", userList.stream().map(this::toUserResponse).toList());
+
+        // ApiResponse<Map<String, Object>> response = new ApiResponse<>("success",
+        // data, links);
+
+        // return ResponseEntity.ok()
+        // .header("Cache-Control", "no-store")
+        // .body(response);
+        // }
+
         @GetMapping("/users")
-        public ResponseEntity<ApiResponse<Map<String, Object>>> getUsers(Authentication authentication,
-                        @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int perPage,
-                        @RequestParam(required = false) String sort,
-                        @RequestParam(required = false) String search) {
+        public Mono<ResponseEntity<String>> getAllUser(
+                        @RequestParam MultiValueMap<String, String> queryParams, 
+                        Authentication authentication,
+                        HttpServletRequest request,
+                        @RequestHeader HttpHeaders headers) {
 
-                // self link
-                Map<String, Object> selfLink = new HashMap<>();
-                selfLink.put("href", "/api/auth0/management/users");
+                String token = tokenService.getAccessToken();
+                String baseUrl = props.apiBaseUrl() + "/users";
 
-                Map<String, Object> createNewUser = new HashMap<>();
-                createNewUser.put("href", "/api/auth0/management/users");
-                createNewUser.put("method", "POST");
+                
+                URI uri = UriComponentsBuilder.fromUriString(baseUrl)
+                                .queryParams(queryParams)
+                                .build()
+                                .toUri();
 
-                Map<String, Object> links = new HashMap<>();
-                links.put("self", selfLink);
-                links.put("create_new_user", createNewUser);
-
-                List<Auth0UserDto> userList = authService.listOfAllUsers(page, perPage, sort,
-                                search);
-
-                Map<String, Object> data = new HashMap<>();
-                data.put("items", userList.stream().map(this::toUserResponse).toList());
-
-                ApiResponse<Map<String, Object>> response = new ApiResponse<>("success",
-                                data, links);
-
-                return ResponseEntity.ok()
-                                .header("Cache-Control", "no-store")
-                                .body(response);
+                return webClient.get()
+                                .uri(uri) 
+                                .header("Authorization", "Bearer " + token)
+                                .exchangeToMono(response -> response.bodyToMono(String.class)
+                                                .defaultIfEmpty("")
+                                                .map(body -> ResponseEntity
+                                                                .status(response.statusCode())
+                                                                .body(body)));
         }
 
         // ---------------------------------------------------------------------
@@ -140,7 +169,7 @@ public class Auth0ManagementController {
                         HttpServletRequest request,
                         @RequestHeader HttpHeaders headers) {
                 String token = tokenService.getAccessToken();
-                String url = props.apiBaseUrl() + "/users/";
+                String url = props.apiBaseUrl() + "/users";
                 return webClient.post()
                                 .uri(url)
                                 .header("Authorization", "Bearer " + token)
@@ -331,81 +360,102 @@ public class Auth0ManagementController {
 
         // ---------------------------------------------------------------------------------
 
-        private Auth0UserResponse toUserResponse(Auth0UserDto dto) {
-                Auth0UserResponse response = Auth0UserResponse.builder()
-                                .userId(dto.getUserId())
-                                .name(dto.getName())
-                                .nickname(dto.getNickname())
-                                .givenName(dto.getGivenName())
-                                .familyName(dto.getFamilyName())
-                                .email(dto.getEmail())
-                                .picture(dto.getPicture())
-                                .emailVerified(dto.isEmailVerified())
-                                .createdAt(dto.getCreatedAt())
-                                .updatedAt(dto.getUpdatedAt())
-                                .lastLogin(dto.getLastLogin())
-                                .lastIp(dto.getLastIp())
-                                .loginsCount(dto.getLoginsCount())
-                                .build();
+        // private Auth0UserResponse toUserResponse(Auth0UserDto dto) {
+        // Auth0UserResponse response = Auth0UserResponse.builder()
+        // .userId(dto.getUserId())
+        // .name(dto.getName())
+        // .nickname(dto.getNickname())
+        // .givenName(dto.getGivenName())
+        // .familyName(dto.getFamilyName())
+        // .email(dto.getEmail())
+        // .picture(dto.getPicture())
+        // .emailVerified(dto.isEmailVerified())
+        // .createdAt(dto.getCreatedAt())
+        // .updatedAt(dto.getUpdatedAt())
+        // .lastLogin(dto.getLastLogin())
+        // .lastIp(dto.getLastIp())
+        // .loginsCount(dto.getLoginsCount())
+        // .build();
 
-                response.setLinks(buildAuth0UserLinks(dto));
-                return response;
-        }
+        // response.setLinks(buildAuth0UserLinks(dto));
+        // return response;
+        // }
 
-        private Map<String, Object> buildAuth0UserLinks(Auth0UserDto dto) {
-                Map<String, Object> links = new HashMap<>();
-                links.put("self", createLink("/api/auth0/management/users/"
-                                + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8)));
-                links.put("update_user_details",
-                                createLinkWithMethod("/api/auth0/management/users/"
-                                                + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8), "PATCH"));
-                links.put("delete_user",
-                                createLinkWithMethod("/api/auth0/management/users/"
-                                                + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8),
-                                                "DELETE"));
-                links.put("get_all_roles", createLinkWithMethod("/api/auth0/management/roles", "GET"));
-                links.put("get_user_role",
-                                createLinkWithMethod(
-                                                "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
-                                                                StandardCharsets.UTF_8) + "/roles",
-                                                "GET"));
-                links.put("remove_user_role",
-                                createLinkWithMethod(
-                                                "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
-                                                                StandardCharsets.UTF_8) + "/roles",
-                                                "DELETE"));
-                links.put("Assign_user_role",
-                                createLinkWithMethod(
-                                                "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
-                                                                StandardCharsets.UTF_8) + "/roles",
-                                                "POST"));
-                return links;
-        }
+        // private Map<String, Object> buildAuth0UserLinks(Auth0UserDto dto) {
+        // Map<String, Object> links = new HashMap<>();
+        // links.put("self", createLink("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8)));
+        // links.put("update_user_details",
+        // createLinkWithMethod("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8), "PATCH"));
+        // links.put("delete_user",
+        // createLinkWithMethod("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getUserId(), StandardCharsets.UTF_8),
+        // "DELETE"));
+        // links.put("get_all_roles",
+        // createLinkWithMethod("/api/auth0/management/roles", "GET"));
+        // links.put("get_user_role",
+        // createLinkWithMethod(
+        // "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
+        // StandardCharsets.UTF_8) + "/roles",
+        // "GET"));
+        // links.put("remove_user_role",
+        // createLinkWithMethod(
+        // "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
+        // StandardCharsets.UTF_8) + "/roles",
+        // "DELETE"));
+        // links.put("Assign_user_role",
+        // createLinkWithMethod(
+        // "/api/auth0/management/users/" + URLEncoder.encode(dto.getUserId(),
+        // StandardCharsets.UTF_8) + "/roles",
+        // "POST"));
+        // return links;
+        // }
 
         // get user role
+        // @GetMapping("/users/{id}/roles")
+        // public ResponseEntity<ApiResponse<Map<String, Object>>> getRoleOfUser(
+        // @PathVariable String id,
+        // Authentication authentication) {
+
+        // Map<String, Object> selfLink = new HashMap<>();
+        // selfLink.put("href", "/api/auth0/management/users/" + URLEncoder.encode(id,
+        // StandardCharsets.UTF_8)
+        // + "/roles");
+
+        // Map<String, Object> links = new HashMap<>();
+        // links.put("self", selfLink);
+
+        // List<Auth0RoleDto> roleList = authService.getRoleNamesForUser(id);
+
+        // Map<String, Object> data = new HashMap<>();
+        // data.put("items", roleList.stream().map(this::toRoleResponse).toList());
+
+        // ApiResponse<Map<String, Object>> response = new ApiResponse<>("success",
+        // data, links);
+
+        // return ResponseEntity.ok()
+        // .header("Cache-Control", "no-store")
+        // .body(response);
+
+        // }
+
         @GetMapping("/users/{id}/roles")
-        public ResponseEntity<ApiResponse<Map<String, Object>>> getRoleOfUser(
+        public Mono<ResponseEntity<String>> getRoleOfUser(
                         @PathVariable String id,
-                        Authentication authentication) {
-
-                Map<String, Object> selfLink = new HashMap<>();
-                selfLink.put("href", "/api/auth0/management/users/" + URLEncoder.encode(id, StandardCharsets.UTF_8)
-                                + "/roles");
-
-                Map<String, Object> links = new HashMap<>();
-                links.put("self", selfLink);
-
-                List<Auth0RoleDto> roleList = authService.getRoleNamesForUser(id);
-
-                Map<String, Object> data = new HashMap<>();
-                data.put("items", roleList.stream().map(this::toRoleResponse).toList());
-
-                ApiResponse<Map<String, Object>> response = new ApiResponse<>("success", data, links);
-
-                return ResponseEntity.ok()
-                                .header("Cache-Control", "no-store")
-                                .body(response);
-
+                        Authentication authentication,
+                        HttpServletRequest request,
+                        @RequestHeader HttpHeaders headers) {
+                String token = tokenService.getAccessToken();
+                String url = props.apiBaseUrl() + "/users/" + id + "/roles";
+                return webClient.get()
+                                .uri(url)
+                                .header("Authorization", "Bearer " + token)
+                                .exchangeToMono(response -> response.bodyToMono(String.class)
+                                                .defaultIfEmpty("")
+                                                .map(body -> ResponseEntity
+                                                                .status(response.statusCode())
+                                                                .body(body)));
         }
 
         // ------------------------------------------------------------------------
@@ -445,7 +495,6 @@ public class Auth0ManagementController {
         // .toBodilessEntity();
         // }
 
-
         @DeleteMapping("/users/{id}/roles")
         public Mono<ResponseEntity<String>> removeUserRole(
                         @PathVariable String id,
@@ -467,12 +516,12 @@ public class Auth0ManagementController {
                                                                 .body(b)));
         }
         /*
-        {
-        "roles": [
-                "string"
-                ]
-        }
-        */
+         * {
+         * "roles": [
+         * "string"
+         * ]
+         * }
+         */
 
         // ----------------------------------------------------------------------------------
         // assign a role for the user
@@ -531,15 +580,13 @@ public class Auth0ManagementController {
                                                                 .body(b)));
         }
 
-
-
         /*
-        {
-        "roles": [
-                "string"
-                ]
-        }
-        */
+         * {
+         * "roles": [
+         * "string"
+         * ]
+         * }
+         */
 
         // --------------------------------------------------------------------------------
         // get all roles
@@ -593,67 +640,70 @@ public class Auth0ManagementController {
 
         // -------------------------------------------------------------------------
 
-        private Auth0RoleResponse toRoleResponse(Auth0RoleDto dto) {
-                Auth0RoleResponse response = Auth0RoleResponse.builder()
-                                .id(dto.getId())
-                                .name(dto.getName())
-                                .description(dto.getDescription())
-                                .build();
+        // private Auth0RoleResponse toRoleResponse(Auth0RoleDto dto) {
+        // Auth0RoleResponse response = Auth0RoleResponse.builder()
+        // .id(dto.getId())
+        // .name(dto.getName())
+        // .description(dto.getDescription())
+        // .build();
 
-                response.setLinks(buildAuth0RoleLinks(dto));
-                return response;
-        }
+        // response.setLinks(buildAuth0RoleLinks(dto));
+        // return response;
+        // }
 
-        private Map<String, Object> buildAuth0RoleLinks(Auth0RoleDto dto) {
-                Map<String, Object> links = new HashMap<>();
-                links.put("self", createLink("/api/auth0/management/users/"
-                                + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles"));
-                links.put("get_all_roles", createLinkWithMethod("/api/auth0/management/roles", "GET"));
-                links.put("remove_user_role",
-                                createLinkWithMethod("/api/auth0/management/users/"
-                                                + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles",
-                                                "DELETE"));
-                links.put("Assign_user_role",
-                                createLinkWithMethod("/api/auth0/management/users/"
-                                                + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles",
-                                                "POST"));
-                return links;
+        // private Map<String, Object> buildAuth0RoleLinks(Auth0RoleDto dto) {
+        // Map<String, Object> links = new HashMap<>();
+        // links.put("self", createLink("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles"));
+        // links.put("get_all_roles",
+        // createLinkWithMethod("/api/auth0/management/roles", "GET"));
+        // links.put("remove_user_role",
+        // createLinkWithMethod("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles",
+        // "DELETE"));
+        // links.put("Assign_user_role",
+        // createLinkWithMethod("/api/auth0/management/users/"
+        // + URLEncoder.encode(dto.getId(), StandardCharsets.UTF_8) + "/roles",
+        // "POST"));
+        // return links;
 
-        }
+        // }
 
-        private Map<String, String> createLinkWithMethod(String href, String method) {
-                Map<String, String> link = new HashMap<>();
-                link.put("href", href);
-                link.put("method", method);
-                return link;
-        }
+        // private Map<String, String> createLinkWithMethod(String href, String method)
+        // {
+        // Map<String, String> link = new HashMap<>();
+        // link.put("href", href);
+        // link.put("method", method);
+        // return link;
+        // }
 
-        private Map<String, String> createLink(String href) {
-                Map<String, String> link = new HashMap<>();
-                link.put("href", href);
-                return link;
-        }
+        // private Map<String, String> createLink(String href) {
+        // Map<String, String> link = new HashMap<>();
+        // link.put("href", href);
+        // return link;
+        // }
 
-        @ExceptionHandler(HttpStatusCodeException.class)
-        public ResponseEntity<?> handleAuth0SpecificError(HttpStatusCodeException ex) {
-                // This will ONLY trigger for errors in THIS controller
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("statusCode", ex.getStatusCode().value());
+        // @ExceptionHandler(HttpStatusCodeException.class)
+        // public ResponseEntity<?> handleAuth0SpecificError(HttpStatusCodeException ex)
+        // {
+        // // This will ONLY trigger for errors in THIS controller
+        // Map<String, Object> errorResponse = new HashMap<>();
+        // errorResponse.put("statusCode", ex.getStatusCode().value());
 
-                try {
-                        Object auth0Response = ex.getResponseBodyAs(Object.class);
-                        if (auth0Response instanceof Map) {
-                                Map<String, Object> auth0Map = (Map<String, Object>) auth0Response;
-                                errorResponse.putAll(auth0Map);
-                        }
-                } catch (Exception e) {
-                        errorResponse.put("error", ex.getStatusText());
-                        errorResponse.put("message", ex.getMessage());
-                }
+        // try {
+        // Object auth0Response = ex.getResponseBodyAs(Object.class);
+        // if (auth0Response instanceof Map) {
+        // Map<String, Object> auth0Map = (Map<String, Object>) auth0Response;
+        // errorResponse.putAll(auth0Map);
+        // }
+        // } catch (Exception e) {
+        // errorResponse.put("error", ex.getStatusText());
+        // errorResponse.put("message", ex.getMessage());
+        // }
 
-                return ResponseEntity
-                                .status(ex.getStatusCode())
-                                .body(errorResponse);
-        }
+        // return ResponseEntity
+        // .status(ex.getStatusCode())
+        // .body(errorResponse);
+        // }
 
 }

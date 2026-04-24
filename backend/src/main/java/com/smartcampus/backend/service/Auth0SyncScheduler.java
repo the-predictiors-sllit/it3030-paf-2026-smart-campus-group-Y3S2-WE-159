@@ -9,25 +9,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class Auth0SyncScheduler {
 
-    private static final Logger log = LoggerFactory.getLogger(Auth0SyncScheduler.class);
+    // private static final Logger log = LoggerFactory.getLogger(Auth0SyncScheduler.class);
 
-    private final Auth0UserSyncService syncService;
+    // private final Auth0UserSyncService syncService;
 
-    @Value("${app.auth0-sync.enabled:true}")
-    private boolean enabled;
+    // @Value("${app.auth0-sync.enabled:true}")
+    // private boolean enabled;
 
-    public Auth0SyncScheduler(Auth0UserSyncService syncService) {
-        this.syncService = syncService;
-    }
+    // public Auth0SyncScheduler(Auth0UserSyncService syncService) {
+    //     this.syncService = syncService;
+    // }
 
-    @Scheduled(cron = "${app.auth0-sync.cron:0 0/30 * * * *}")
-    public void runSync() {
-        if (!enabled) {
-            return;
-        }
+    // @Scheduled(cron = "${app.auth0-sync.cron:0 0/30 * * * *}")
+    // public void runSync() {
+    //     if (!enabled) {
+    //         return;
+    //     }
 
-        int synced = syncService.syncAllUsers();
-        log.info("Auth0 sync completed. Synced {} users", synced);
-    }
+    //     int synced = syncService.syncAllUsers();
+    //     log.info("Auth0 sync completed. Synced {} users", synced);
+    // }
 }
 

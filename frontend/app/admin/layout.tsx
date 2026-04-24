@@ -140,7 +140,7 @@ export default function RootLayout({
             </div>
           </SidebarBody>
         </Sidebar>
-        <div className="flex flex-1 overflow-auto px-5">{children}</div>
+        <div className="flex flex-1 min-h-screen overflow-auto px-5">{children}</div>
       </div>
     </main>
   )

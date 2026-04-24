@@ -14,36 +14,36 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 export const ManageUserDelete = ({
-  deleteUrl,
+  userId,
   token,
-}: {
-  deleteUrl: string
-  token: string
-}) => {
+  onDeleteSuccess
+}: any) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<Auth0ErrorProp | null>(null)
   const Api_Url = getBaseUrl()
   const handleDelete = async () => {
     setLoading(true)
-    console.log("Api_Url: "+Api_Url)
-    console.log("token: "+token)
+    console.log("Api_Url: " + Api_Url)
+    console.log("token: " + token)
 
     try {
-      const response = await fetch(`${Api_Url}${deleteUrl}`, {
+      const response = await fetch(`/api/auth0/management/users/${encodeURIComponent(userId)}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          // "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       })
 
-      console.log("respoce: "+response)
-      if (!response.ok) {
+      if (response.status == 204 && response.ok) {
+        toast.success("User removed successfully")
+        await onDeleteSuccess();
+      } else {
         const errorData: Auth0ErrorProp = await response.json()
         setError(errorData)
+        toast.error("Error! Can't remove user.")
         throw new Error(errorData.message || "Failed to delete the item.")
       }
-      toast.success("User removed successfully")
     } catch (err) {
       toast.error(error?.message || "An error occurred")
       console.log(err instanceof Error ? err.message : "Something went wrong")
