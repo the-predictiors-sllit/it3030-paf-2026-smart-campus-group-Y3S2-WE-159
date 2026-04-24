@@ -15,33 +15,33 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
-     * Find all bookings by user ID
+     Find all bookings by user ID
      */
     List<Booking> findByUserId(String userId);
 
     /**
-     * Find all bookings by resource ID
+     Find all bookings by resource ID
      */
     List<Booking> findByResourceId(String resourceId);
 
     /**
-     * Find all bookings by status
+      Find all bookings by status
      */
     List<Booking> findByStatus(String status);
 
     /**
-     * Find bookings by user ID and status
+      Find bookings by user ID and status
      */
     List<Booking> findByUserIdAndStatus(String userId, String status);
 
     /**
-     * Find bookings by resource ID and status
+      Find bookings by resource ID and status
      */
     List<Booking> findByResourceIdAndStatus(String resourceId, String status);
 
     /**
-     * Check for overlapping bookings on the same resource
-     * Returns bookings that overlap with the given time window
+     Check for overlapping bookings on the same resource
+      Returns bookings that overlap with the given time window
      */
     @Query("SELECT b FROM Booking b WHERE b.resourceId = :resourceId " +
             "AND b.status IN ('PENDING', 'APPROVED') " +
@@ -53,7 +53,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("endTime") LocalDateTime endTime);
 
     /**
-     * Find all bookings for a specific resource within a date range
+      Find all bookings for a specific resource within a date range
      */
     @Query("SELECT b FROM Booking b WHERE b.resourceId = :resourceId " +
             "AND b.startTime >= :startDate " +
@@ -65,7 +65,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("endDate") LocalDateTime endDate);
 
     // analytics page part below
-    // 1. Most Booked Resources
+    // Most Booked Resources
     @Query(value = "SELECT r.Name, COUNT(*) " +
             "FROM Bookings b " +
             "JOIN Resources r ON r.Id = b.ResourceId " +
@@ -73,11 +73,11 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "ORDER BY COUNT(*) DESC", nativeQuery = true)
     List<Object[]> findMostBookedResources();
 
-    // 2. Approval Rate
+    // Approval Rate
     @Query("SELECT b.status, COUNT(b) FROM Booking b GROUP BY b.status")
     List<Object[]> findStatusDistribution();
 
-    // 3. Trends for last 7 days
+    // Trends for last 7 days
     @Query(value = "SELECT CAST(b.StartTime AS DATE) AS [day], COUNT(*) AS [count] " +
             "FROM Bookings b " +
             "WHERE b.StartTime >= DATEADD(DAY, -6, CAST(GETDATE() AS DATE)) " +

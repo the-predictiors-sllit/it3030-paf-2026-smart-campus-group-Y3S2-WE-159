@@ -15,26 +15,19 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * REST Controller for Maintenance & Incident Ticketing (Module C).
- *
- * Endpoints implemented:
- *
- *   Tickets:
- *     POST   /api/tickets              – Create a new incident ticket
- *     GET    /api/tickets              – List tickets (with filters + pagination)
- *     GET    /api/tickets/{id}         – Get full ticket details
- *     PATCH  /api/tickets/{id}         – Update status / assign technician / add notes
- *     DELETE /api/tickets/{id}         – Delete a ticket (admin only)
- *
- *   Comments:
- *     POST   /api/tickets/{id}/comments              – Add a comment
- *     GET    /api/tickets/{id}/comments              – List all comments on a ticket
- *     PATCH  /api/tickets/{id}/comments/{commentId}  – Edit own comment
- *     DELETE /api/tickets/{id}/comments/{commentId}  – Delete own comment (or admin any)
- *
- * All responses follow the ApiResponse<T> wrapper used across the project.
- * HATEOAS _links are included on every response.
- * Cache-Control: no-store is set on all ticket endpoints (data changes frequently).
+
+   Tickets:
+      POST   /api/tickets              – Create a new incident ticket
+      GET    /api/tickets              – List tickets (with filters + pagination)
+      GET    /api/tickets/{id}         – Get full ticket details
+      PATCH  /api/tickets/{id}         – Update status / assign technician / add notes
+      DELETE /api/tickets/{id}         – Delete a ticket (admin only)
+ 
+    Comments:
+      POST   /api/tickets/{id}/comments              – Add a comment
+      GET    /api/tickets/{id}/comments              – List all comments on a ticket
+      PATCH  /api/tickets/{id}/comments/{commentId}  – Edit own comment
+      DELETE /api/tickets/{id}/comments/{commentId}  – Delete own comment (or admin any)
  */
 @RestController
 @RequestMapping("/api/tickets")
@@ -44,26 +37,26 @@ public class TicketController {
     @Autowired
     private TicketService ticketService;
 
-    // ── POST /api/tickets ─────────────────────────────────────────────────────
+    // POST /api/tickets
 
     /**
-     * Create a new incident ticket.
-     *
-     * Request body example:
-     * {
-     *   "resourceId": "res_room_01",          (optional)
-     *   "location": "Building 1, Floor 2",    (optional if resourceId is given)
-     *   "category": "HARDWARE",
-     *   "priority": "HIGH",
-     *   "description": "Projector is flickering.",
-     *   "contactPhone": "555-0192",
-     *   "attachments": ["1711025800_usr1001_tint1.jpg"]  (pre-uploaded, max 3)
-     * }
-     *
-     * Status Codes:
-     *   201 Created     – Ticket created successfully.
-     *   400 Bad Request – Validation failed.
-     *   500 Internal    – Unexpected error.
+      Create a new incident ticket.
+     
+      Request body example:
+      {
+        "resourceId": "res_room_01",          (optional)
+        "location": "Building 1, Floor 2",    (optional if resourceId is given)
+        "category": "HARDWARE",
+        "priority": "HIGH",
+        "description": "Projector is flickering.",
+        "contactPhone": "555-0192",
+        "attachments": ["1711025800_usr1001_tint1.jpg"]  (pre-uploaded, max 3)
+      }
+     
+      Status Codes:
+        201 Created     – Ticket created successfully.
+        400 Bad Request – Validation failed.
+        500 Internal    – Unexpected error.
      */
     @PostMapping
     public ResponseEntity<ApiResponse<TicketResponse>> createTicket(
@@ -102,23 +95,23 @@ public class TicketController {
         }
     }
 
-    // ── GET /api/tickets ──────────────────────────────────────────────────────
+    // GET /api/tickets
 
     /**
-     * List tickets with optional filters and pagination.
-     *
-     * Query parameters (all optional):
-     *   status     – OPEN | IN_PROGRESS | RESOLVED | CLOSED | REJECTED
-     *   createdBy  – filter to one user's tickets (USER sees only their own)
-     *   assignedTo – filter to a technician's queue
-     *   resourceId – filter to tickets for a specific resource
-     *   page       – page number, default 1
-     *   limit      – items per page, default 10
-     *
-     * Status Codes:
-     *   200 OK          – List returned (may be empty).
-     *   400 Bad Request – Invalid filter value.
-     *   500 Internal    – Unexpected error.
+      List tickets with optional filters and pagination.
+     
+      Query parameters (all optional):
+        status     – OPEN | IN_PROGRESS | RESOLVED | CLOSED | REJECTED
+        createdBy  – filter to one user's tickets (USER sees only their own)
+        assignedTo – filter to a technician's queue
+        resourceId – filter to tickets for a specific resource
+        page       – page number, default 1
+        limit      – items per page, default 10
+     
+      Status Codes:
+        200 OK          – List returned (may be empty).
+        400 Bad Request – Invalid filter value.
+        500 Internal    – Unexpected error.
      */
     @GetMapping
     public ResponseEntity<ApiResponse<ListTicketsResponse>> listTickets(
@@ -216,15 +209,15 @@ public class TicketController {
         }
     }
 
-    // ── GET /api/tickets/{id} ─────────────────────────────────────────────────
+    // GET /api/tickets/{id}
 
     /**
-     * Get full details for a single ticket (includes comments and attachments).
-     *
-     * Status Codes:
-     *   200 OK    – Ticket found and returned.
-     *   404 Not Found – Ticket does not exist.
-     *   500 Internal  – Unexpected error.
+      Get full details for a single ticket (includes comments and attachments).
+     
+      Status Codes:
+        200 OK    – Ticket found and returned.
+        404 Not Found – Ticket does not exist.
+        500 Internal  – Unexpected error.
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TicketResponse>> getTicket(
@@ -258,24 +251,24 @@ public class TicketController {
         }
     }
 
-    // ── PATCH /api/tickets/{id} ───────────────────────────────────────────────
+    // PATCH /api/tickets/{id} 
 
     /**
-     * Partially update a ticket.
-     * Used by ADMIN to approve/reject/assign and by TECHNICIAN to add resolution notes.
-     *
-     * Request body (all fields optional):
-     * {
-     *   "status": "IN_PROGRESS",
-     *   "assignedTo": "usr_9001",
-     *   "resolutionNotes": "Investigating the bulb connection."
-     * }
-     *
-     * Status Codes:
-     *   200 OK          – Ticket updated.
-     *   400 Bad Request – Invalid status or transition.
-     *   404 Not Found   – Ticket not found.
-     *   500 Internal    – Unexpected error.
+      update a ticket.
+      Used by ADMIN to approve/reject/assign and by TECHNICIAN to add resolution notes.
+     
+      Request body (all fields optional):
+      {
+        "status": "IN_PROGRESS",
+        "assignedTo": "usr_9001",
+        "resolutionNotes": "Investigating the bulb connection."
+      }
+     
+      Status Codes:
+        200 OK          – Ticket updated.
+        400 Bad Request – Invalid status or transition.
+        404 Not Found   – Ticket not found.
+        500 Internal    – Unexpected error.
      */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<TicketResponse>> updateTicket(
@@ -308,16 +301,16 @@ public class TicketController {
         }
     }
 
-    // ── DELETE /api/tickets/{id} ──────────────────────────────────────────────
+    //  DELETE /api/tickets/{id} 
 
     /**
-     * Delete a ticket (admin only).
-     * Also removes all associated attachment files from Minio.
-     *
-     * Status Codes:
-     *   204 No Content – Ticket deleted.
-     *   404 Not Found  – Ticket not found.
-     *   500 Internal   – Unexpected error.
+      Delete a ticket (admin only).
+      Also removes all associated attachment files from Minio.
+     
+      Status Codes:
+        204 No Content – Ticket deleted.
+        404 Not Found  – Ticket not found.
+        500 Internal   – Unexpected error.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
@@ -331,19 +324,19 @@ public class TicketController {
         }
     }
 
-    // ── POST /api/tickets/{id}/comments ──────────────────────────────────────
+    //  POST /api/tickets/{id}/comments
 
     /**
-     * Add a comment to a ticket.
-     * Any authenticated user (USER / ADMIN / TECHNICIAN) can comment.
-     *
-     * Request body: { "text": "I will check this out by 2 PM." }
-     *
-     * Status Codes:
-     *   201 Created     – Comment added.
-     *   400 Bad Request – Empty text.
-     *   404 Not Found   – Ticket not found.
-     *   500 Internal    – Unexpected error.
+     Add a comment to a ticket.
+     Any authenticated user (USER / ADMIN / TECHNICIAN) can comment.
+     
+      Request body: { "text": "I will check this out by 2 PM." }
+     
+      Status Codes:
+        201 Created     – Comment added.
+        400 Bad Request – Empty text.
+        404 Not Found   – Ticket not found.
+        500 Internal    – Unexpected error.
      */
     @PostMapping("/{id}/comments")
     public ResponseEntity<ApiResponse<TicketCommentResponse>> addComment(
@@ -395,15 +388,15 @@ public class TicketController {
         }
     }
 
-    // ── GET /api/tickets/{id}/comments ───────────────────────────────────────
+    //  GET /api/tickets/{id}/comments 
 
     /**
-     * List all comments on a ticket (oldest first).
-     *
-     * Status Codes:
-     *   200 OK        – List returned (may be empty).
-     *   404 Not Found – Ticket not found.
-     *   500 Internal  – Unexpected error.
+      List all comments on a ticket (oldest first).
+     
+      Status Codes:
+        200 OK        – List returned (may be empty).
+        404 Not Found – Ticket not found.
+        500 Internal  – Unexpected error.
      */
     @GetMapping("/{id}/comments")
     public ResponseEntity<ApiResponse<List<TicketCommentResponse>>> listComments(

@@ -19,8 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service layer for Booking operations.
- * Handles business logic, validation, and data transformation.
+  for Booking operations.
  */
 @Service
 @Transactional

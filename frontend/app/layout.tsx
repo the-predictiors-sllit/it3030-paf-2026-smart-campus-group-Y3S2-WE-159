@@ -1,16 +1,13 @@
 import { Geist_Mono, Inter } from "next/font/google"
 
-import { NavigationBar } from "@/components/custom/NavigationBar"
+import { AIAccessBtn } from "@/components/custom/AIAccessBtn"
+import FooterSection from "@/components/custom/FooterSection"
+import NavBarNew from "@/components/custom/NavBarNew"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/lib/auth-context"
-import { auth0 } from "@/lib/auth0"
 import { cn } from "@/lib/utils"
-import { redirect } from "next/navigation"
 import "./globals.css"
-import NavBarNew from "@/components/custom/NavBarNew"
-import FooterSection from "@/components/custom/FooterSection"
-import { AIAccessBtn } from "@/components/custom/AIAccessBtn"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -24,26 +21,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const session = await auth0.getSession()
-  if (!session?.user) {
-    redirect("/auth/login?returnTo=/")
-  }
 
-  try {
-    await auth0.getAccessToken()
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : ""
-    const requiresReauth =
-      errorMessage.includes("AccessTokenError") ||
-      (errorMessage.includes("expired") &&
-        errorMessage.includes("refresh token"))
-
-    if (requiresReauth) {
-      redirect("/auth/login?returnTo=/")
-    }
-
-    throw error
-  }
 
   return (
     <html

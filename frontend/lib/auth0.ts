@@ -5,11 +5,27 @@ export const auth0 = new Auth0Client({
   clientId: process.env.AUTH0_CLIENT_ID,
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
   secret: process.env.AUTH0_SECRET,
-  // v4 expects APP_BASE_URL; this fallback supports existing AUTH0_BASE_URL setups.
   appBaseUrl: process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL,
   authorizationParameters: {
-    // CRITICAL: This guarantees the token is valid for your Spring Boot backend
     audience: process.env.AUTH0_AUDIENCE,
     scope: 'openid profile email'
+  },
+
+  async beforeSessionSaved(session) {
+    const namespace = 'https://smartcampus.api';
+
+    const payload = JSON.parse(
+      Buffer.from(session.tokenSet.idToken!.split('.')[1], 'base64').toString()
+    );
+
+    return {
+      ...session,
+      user: {
+        ...session.user,
+        [`${namespace}/roles`]: payload[`${namespace}/roles`],
+        [`${namespace}/email`]: payload[`${namespace}/email`],
+        [`${namespace}/name`]:  payload[`${namespace}/name`],
+      }
+    };
   }
 });

@@ -136,7 +136,7 @@ interface ApiUserRoleResponseProp {
 // @RequestParam(required = false) String sort,
 // @RequestParam(required = false) String search)
 
-function ActionsCell({ row }: { row: Row<userProp> }) {
+function ActionsCell({ row,token }: { row: Row<userProp>,token:string }) {
   const { copyToClipboard } = useCopyToClipboard()
   const handleCopyId = () => {
     copyToClipboard(row.original.userId)
@@ -171,13 +171,13 @@ function ActionsCell({ row }: { row: Row<userProp> }) {
             <IconTrashX />
           </Button>
         </AlertDialogTrigger>
-        <ManageUserDelete deleteUrl={row.original._links.delete_user.href}/>
+        <ManageUserDelete deleteUrl={row.original._links.delete_user.href} token={token} />
       </AlertDialog>
     </ButtonGroup>
   )
 }
 
-export function ManageUsers() {
+export function ManageUsers({token}:{token:string}) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -269,6 +269,32 @@ export function ManageUsers() {
       //   enableResizing: false,
       // },
       {
+        accessorKey: "userId",
+        id: "userId",
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            title="User ID"
+            visibility={true}
+            column={column}
+          />
+        ),
+        cell: ({ row }) => {
+          return (
+            <div className="flex items-center gap-1.5">
+              <span> {row.original.userId}</span>
+            </div>
+          )
+        },
+        size: 100,
+        meta: {
+          headerClassName: "",
+          cellClassName: "text-start",
+        },
+        enableSorting: true,
+        enableHiding: true,
+        enableResizing: true,
+      },
+      {
         accessorKey: "user",
         id: "user",
         header: ({ column }) => (
@@ -331,7 +357,7 @@ export function ManageUsers() {
             </div>
           )
         },
-        size: 150,
+        size: 125,
         meta: {
           headerClassName: "",
           cellClassName: "text-start",
@@ -363,7 +389,7 @@ export function ManageUsers() {
             </div>
           )
         },
-        size: 150,
+        size: 125,
         meta: {
           headerClassName: "",
           cellClassName: "text-start",
@@ -395,7 +421,7 @@ export function ManageUsers() {
             </div>
           )
         },
-        size: 150,
+        size: 125,
         meta: {
           headerClassName: "",
           cellClassName: "text-start",
@@ -451,7 +477,7 @@ export function ManageUsers() {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <div className="font-medium text-foreground">
+              <div className="text-foreground">
                 {formatDateTime(row.original.createdAt)}
               </div>
             </div>
@@ -481,7 +507,7 @@ export function ManageUsers() {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <div className="font-medium text-foreground">
+              <div className="text-foreground">
                 {formatDateTime(row.original.updatedAt)}
               </div>
             </div>
@@ -511,7 +537,7 @@ export function ManageUsers() {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <div className="font-medium text-foreground">
+              <div className="text-foreground">
                 {formatDateTime(row.original.lastLogin)}
               </div>
             </div>
@@ -541,9 +567,7 @@ export function ManageUsers() {
         cell: ({ row }) => {
           return (
             <div className="flex items-center gap-1.5">
-              <div className="font-medium text-foreground">
-                {row.original.lastIp}
-              </div>
+              <div className="text-foreground">{row.original.lastIp}</div>
             </div>
           )
         },
@@ -569,9 +593,7 @@ export function ManageUsers() {
         ),
         cell: ({ row }) => {
           return (
-            <div className="font-medium text-foreground">
-              {row.original.loginsCount}
-            </div>
+            <div className="text-foreground">{row.original.loginsCount}</div>
           )
         },
         size: 150,
@@ -583,8 +605,8 @@ export function ManageUsers() {
       {
         id: "actions",
         header: "",
-        cell: ({ row }) => <ActionsCell row={row} />,
-        size: 150,
+        cell: ({ row }) => <ActionsCell row={row} token={token} />,
+   
         enableSorting: false,
         enableHiding: false,
         enableResizing: false,
@@ -672,10 +694,15 @@ export function ManageUsers() {
             </div>
           </div>
           <CardAction>
-            <Button>
-              <UserPlusIcon />
-              Add new
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="cursor-pointer">
+                  <UserPlusIcon />
+                  Add new
+                </Button>
+              </DialogTrigger>
+              <ManageUserEditProfile />
+            </Dialog>
           </CardAction>
         </CardHeader>
         <CardContent className="border-y px-0">

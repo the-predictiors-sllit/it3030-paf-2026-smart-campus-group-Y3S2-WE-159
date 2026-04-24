@@ -1,6 +1,7 @@
 package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.dto.*;
+import com.smartcampus.backend.model.Notification;
 import com.smartcampus.backend.model.Ticket;
 import com.smartcampus.backend.model.TicketAttachment;
 import com.smartcampus.backend.model.TicketComment;
@@ -18,8 +19,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service layer for Ticket operations (Module C).
- *
  * Handles all business logic:
  * - Creating tickets with attachment linking
  * - Updating ticket status / assigning technicians
@@ -45,6 +44,9 @@ public class TicketService {
 
     @Autowired
     private MinioService minioService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private static final DateTimeFormatter ID_FORMATTER =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -95,7 +97,21 @@ public class TicketService {
                 request.getContactPhone(),
                 userId
         );
-        ticketRepository.save(ticket);
+        Ticket newTicket = ticketRepository.save(ticket);
+
+        // for notification:by pasan
+        Notification notification = Notification.builder()
+                .userId(userId) // target user
+                .type("NEW_TICKET")
+                .title("New Incident Ticket")
+                .message(NotificationTemplates.TicketCreate(newTicket.getCreatedAt(), newTicket.getResourceId(),newTicket.getId()))
+                .referenceId(newTicket.getId())
+                .read(false)
+                .build();
+
+        notificationService.createNotification(notification);
+
+
 
         // Save attachment records (files are already in Minio)
         List<String> savedFileNames = new ArrayList<>();
@@ -110,7 +126,7 @@ public class TicketService {
         return convertToTicketResponse(ticket, savedFileNames, Collections.emptyList());
     }
 
-    // ── READ (single) ─────────────────────────────────────────────────────────
+    // READ (single)
 
     /**
      * Returns full details for one ticket including attachments and comments.
@@ -126,7 +142,7 @@ public class TicketService {
         return convertToTicketResponse(ticket, fileNames, comments);
     }
 
-    // ── READ (list) ───────────────────────────────────────────────────────────
+    // READ (list)
 
     /**
      * Returns a paginated list of tickets with optional filters.
@@ -176,7 +192,7 @@ public class TicketService {
         return new ListTicketsResponse(items, total, validPage, totalPages);
     }
 
-    // ── UPDATE (ticket) ───────────────────────────────────────────────────────
+    //  UPDATE (ticket) 
 
     /**
      * Partially updates a ticket's status, assigned technician, or resolution notes.
@@ -218,7 +234,21 @@ public class TicketService {
         }
 
         ticket.setUpdatedAt(LocalDateTime.now());
-        ticketRepository.save(ticket);
+        Ticket ticketStatus = ticketRepository.save(ticket);
+
+
+        // for notification:by pasan
+        Notification notification = Notification.builder()
+                .userId(ticketStatus.getCreatedBy()) // target user
+                .type("TICKET_STATUS_UPDATE")
+                .title("Ticket Status Update")
+                .message(NotificationTemplates.TicketStatusUpdate(ticketStatus.getStatus(), ticketStatus.getResourceId(),ticketStatus.getId(),ticketStatus.getResolutionNotes()))
+                .referenceId(ticketStatus.getId())
+                .read(false)
+                .build();
+
+        notificationService.createNotification(notification);
+
 
         List<String> fileNames = getAttachmentFileNames(ticketId);
         List<TicketComment> comments = commentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
@@ -287,6 +317,8 @@ public class TicketService {
         );
         commentRepository.save(comment);
 
+
+
         return convertToCommentResponse(comment);
     }
 
@@ -329,7 +361,7 @@ public class TicketService {
         return convertToCommentResponse(comment);
     }
 
-    // ── COMMENTS: DELETE ──────────────────────────────────────────────────────
+    // COMMENTS: DELETE 
 
     /**
      * Deletes a comment.
@@ -357,7 +389,7 @@ public class TicketService {
         commentRepository.delete(comment);
     }
 
-    // ── COMMENTS: LIST ────────────────────────────────────────────────────────
+    // COMMENTS: LIST
 
     /**
      * Returns all comments for a ticket, ordered oldest-first.

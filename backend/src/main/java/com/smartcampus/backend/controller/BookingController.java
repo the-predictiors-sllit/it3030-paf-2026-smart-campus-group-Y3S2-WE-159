@@ -13,15 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 /**
- * REST Controller for Booking Management API.
- * Implements Module B endpoints:
  * - POST /api/bookings - Create booking
  * - GET /api/bookings - List bookings with filtering
  * - GET /api/bookings/me - List current user's bookings (derived from JWT)
  * - GET /api/bookings/{id} - Get booking details
  * - PATCH /api/bookings/{id}/status - Update booking status
- * 
- * Follows REST architectural constraints with HATEOAS links and proper HTTP semantics.
  */
 @RestController
 @RequestMapping("/api/bookings")
@@ -291,20 +287,20 @@ public class BookingController {
         }
     }
     
-    // ============ Helper Methods ============
+    // ------------------------------------------------------------------
     
-    /**
-     * Helper to create HATEOAS link map.
-     */
+    
+     // Helper to create HATEOAS link map.
+     
     private Map<String, String> createLink(String href) {
         Map<String, String> link = new HashMap<>();
         link.put("href", href);
         return link;
     }
     
-    /**
-     * Helper to create HATEOAS link with HTTP method.
-     */
+    
+     // Helper to create HATEOAS link with HTTP method.
+     
     private Map<String, String> createLinkWithMethod(String href, String method) {
         Map<String, String> link = new HashMap<>();
         link.put("href", href);
@@ -312,9 +308,9 @@ public class BookingController {
         return link;
     }
     
-    /**
-     * Helper to build query string for pagination.
-     */
+    
+     // Helper to build query string for pagination.
+     
     private String buildQueryString(String status, String resourceId, String userId, int page, int limit) {
         StringBuilder sb = new StringBuilder("?");
         boolean first = true;
@@ -342,9 +338,9 @@ public class BookingController {
         return sb.toString();
     }
 
-    /**
-     * Build query string for /api/bookings/me links.
-     */
+    
+     //Build query string for /api/bookings/me links.
+
     private String buildMyBookingsQueryString(String status, String resourceId, int page, int limit) {
         return buildQueryString(status, resourceId, null, page, limit);
     }

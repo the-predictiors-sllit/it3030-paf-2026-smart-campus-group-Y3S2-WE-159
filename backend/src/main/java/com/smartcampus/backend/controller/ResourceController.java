@@ -10,15 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 /*
- * REST Controller for Resource Management API.
- * Implements Module A endpoints:
- * - GET /api/resources - List resources with filtering
- * - GET /api/resources/{id} - Get resource details
- * - POST /api/resources - Create resource
- * - PUT /api/resources/{id} - Update resource
- * - DELETE /api/resources/{id} - Delete resource
- * 
- * Follows REST architectural constraints with HATEOAS links and proper HTTP semantics.
+  Implements Module A endpoints:
+  - GET /api/resources - List resources with filtering
+  - GET /api/resources/{id} - Get resource details
+  - POST /api/resources - Create resource
+  - PUT /api/resources/{id} - Update resource
+  - DELETE /api/resources/{id} - Delete resource
  */
 
 @RestController
@@ -30,18 +27,18 @@ public class ResourceController {
     private ResourceService resourceService;
 
         /**
-     * GET /api/resources
-     * List resources with optional filtering and pagination.
-     * 
-     * Query Parameters:
-     * - type: Filter by type (ROOM, LAB, EQUIPMENT)
-     * - status: Filter by status (ACTIVE, OUT_OF_SERVICE)
-     * - minCapacity: Filter by minimum capacity
-     * - page: Page number (1-indexed), default 1
-     * - limit: Items per page, default 10
-     * 
-     * Status Codes:
-     * - 200 OK: Successfully retrieved resources
+    * GET /api/resources
+     List resources with optional filtering and pagination.
+     
+     Query Parameters:
+      - type: Filter by type (ROOM, LAB, EQUIPMENT)
+      - status: Filter by status (ACTIVE, OUT_OF_SERVICE)
+      - minCapacity: Filter by minimum capacity
+      - page: Page number (1-indexed), default 1
+      - limit: Items per page, default 10
+      
+      Status Codes:
+      - 200 OK: Successfully retrieved resources
      */
     @GetMapping
     public ResponseEntity<ApiResponse<ListResourcesResponse>> listResources(

@@ -108,28 +108,37 @@ export const MyBookings = () => {
 
   // Inside export const MyBookings = () => { ...
 
+  const fetchBookings = async () => {
+    try {
+      const response = await fetch("/api/bookings/me", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
+      const result: ApiResponseProps = await response.json()
+
+      if (result.status === "success") {
+        setBookings(result.data.items)
+        setFiltered(result.data.items)
+      }
+    } catch (error) {
+      toast.warning("Something went wrong!")
+      console.error("Failed to fetch data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleCancel = async (bookingId: string) => {
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "CANCELLED",
-          reason: "User cancelled request",
-        }),
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: "DELETE",
       })
 
       if (response.ok) {
-        toast.success("Booking cancelled")
-
-        // Real-time state update prevents unnecessary page reloads
-        setBookings((prev) =>
-          prev.map((b) =>
-            b.id === bookingId ? { ...b, status: "CANCELLED" } : b
-          )
-        )
+        toast.success("Booking Deleted")
+        await fetchBookings()
       } else {
-        toast.error("Unable to cancel booking at this time.")
+        toast.error("Unable to delete booking at this time.")
       }
     } catch (error) {
       toast.error("Connection error. Check your network.")
@@ -137,25 +146,7 @@ export const MyBookings = () => {
   }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/bookings/me", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-        const result: ApiResponseProps = await response.json()
-        if (result.status === "success") {
-          setBookings(result.data.items)
-          setFiltered(result.data.items)
-        }
-      } catch (error) {
-        toast.warning("Something went wrong!")
-        console.error("Failed to fetch data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
+    fetchBookings()
   }, [])
 
   // Filter whenever search or statusFilter changes

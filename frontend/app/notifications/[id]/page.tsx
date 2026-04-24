@@ -35,7 +35,7 @@ interface ApiResponseProps {
 }
 
 const page = () => {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const params = useParams()
   const id = params.id as string
 

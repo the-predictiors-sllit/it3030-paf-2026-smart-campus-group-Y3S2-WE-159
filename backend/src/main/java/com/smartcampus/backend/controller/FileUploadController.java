@@ -21,18 +21,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * REST Controller for File & Media Management (Module F).
- *
- * Endpoints:
- *   POST   /api/upload            – Upload an image to Minio, get back a generated file name.
- *   DELETE /api/upload/{fileName} – Remove an orphan file from Minio before ticket submission.
- *
- * The upload endpoint is called BEFORE the ticket is created.
- * The frontend collects the returned generatedFileNames and sends them
- * inside CreateTicketRequest.attachments when submitting the ticket form.
- *
- * Allowed file types: JPEG, PNG, GIF, WEBP (images only – per assignment spec).
- * Max file size: 10 MB (configured in application.properties).
+  Endpoints:
+    POST   /api/upload            – Upload an image to Minio, get back a generated file name.
+    DELETE /api/upload/{fileName} – Remove an orphan file from Minio before ticket submission.
+ 
+  The upload endpoint is called BEFORE the ticket is created.
+  The frontend collects the returned generatedFileNames and sends them
+  inside CreateTicketRequest.attachments when submitting the ticket form.
+ 
+  Allowed file types: JPEG, PNG, GIF, WEBP (images only – per assignment spec).
+  Max file size: 10 MB (configured in application.properties).
  */
 @RestController
 @RequestMapping("/api/upload")
@@ -52,15 +50,15 @@ public class FileUploadController {
     // ── POST /api/upload ──────────────────────────────────────────────────────
 
     /**
-     * Uploads a file to Minio and returns the generated unique file name.
-     *
-     * The generated name format is: {epochSeconds}_{userId}_{originalName}.{ext}
-     * Example: 1711025800_usr1001_tint1.jpg
-     *
-     * Status Codes:
-     *   201 Created     – File uploaded successfully.
-     *   400 Bad Request – No file, wrong type, or file too large.
-     *   500 Internal    – Minio error.
+      Uploads a file to Minio and returns the generated unique file name.
+     
+      The generated name format is: {epochSeconds}_{userId}_{originalName}.{ext}
+      Example: 1711025800_usr1001_tint1.jpg
+     
+      Status Codes:
+        201 Created     – File uploaded successfully.
+        400 Bad Request – No file, wrong type, or file too large.
+        500 Internal    – Minio error.
      */
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<FileUploadResponse>> uploadFile(
@@ -140,15 +138,15 @@ public class FileUploadController {
     // ── DELETE /api/upload/{fileName} ─────────────────────────────────────────
 
     /**
-     * Deletes an uploaded file from Minio before it is linked to a ticket.
-     *
-     * Called when the user removes an image from their ticket form
-     * before submitting – cleans up the orphan file in Minio.
-     *
-     * Status Codes:
-     *   200 OK          – File deleted from Minio.
-     *   400 Bad Request – Invalid file name.
-     *   500 Internal    – Minio error.
+      Deletes an uploaded file from Minio before it is linked to a ticket.
+     
+      Called when the user removes an image from their ticket form
+      before submitting – cleans up the orphan file in Minio.
+     
+      Status Codes:
+        200 OK          – File deleted from Minio.
+        400 Bad Request – Invalid file name.
+        500 Internal    – Minio error.
      */
     @DeleteMapping("/{fileName}")
     public ResponseEntity<ApiResponse<Map<String, String>>> deleteFile(
@@ -212,7 +210,7 @@ public class FileUploadController {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     private Map<String, String> createLink(String href) {
         Map<String, String> link = new HashMap<>();

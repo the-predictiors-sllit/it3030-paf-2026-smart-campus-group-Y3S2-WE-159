@@ -28,20 +28,20 @@ public class ResourceAnalyticsController {
     private BookingRepository bookingRepository;
 
     /**
-     * GET /api/analytics/resources
-     * Returns comprehensive resource analytics for admin dashboard
-     * Includes: total count, distribution by type/status, most booked resources, utilization
+      GET /api/analytics/resources
+       resource analytics for admin dashboard
+      Includes: total count, distribution by type/status, most booked resources, utilization
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getResourceAnalytics(Authentication authentication) {
         Map<String, Object> analytics = new HashMap<>();
 
         try {
-            // 1. Total resources count
+            //  Total resources count
             long totalResources = resourceRepository.countTotal();
             analytics.put("totalResources", totalResources);
 
-            // 2. Resources distribution by type
+            //  Resources distribution by type
             Map<String, Long> typeDistribution = resourceRepository.countByType()
                     .stream()
                     .collect(Collectors.toMap(
@@ -50,7 +50,7 @@ public class ResourceAnalyticsController {
                     ));
             analytics.put("typeDistribution", typeDistribution);
 
-            // 3. Resources distribution by status
+            // Resources distribution by status
             Map<String, Long> statusDistribution = resourceRepository.countByStatus()
                     .stream()
                     .collect(Collectors.toMap(
@@ -59,7 +59,7 @@ public class ResourceAnalyticsController {
                     ));
             analytics.put("statusDistribution", statusDistribution);
 
-            // 4. Most booked resources (using existing booking analytics)
+            //  Most booked resources (using existing booking analytics)
             List<Object[]> mostBookedResources = bookingRepository.findMostBookedResources();
             List<Map<String, Object>> mostBooked = mostBookedResources.stream()
                     .map(result -> {
@@ -72,7 +72,7 @@ public class ResourceAnalyticsController {
                     .collect(Collectors.toList());
             analytics.put("mostBookedResources", mostBooked);
 
-            // 5. Recently added resources
+            // Recently added resources
             List<Map<String, Object>> recentlyAdded = resourceRepository.findRecentlyAdded()
                     .stream()
                     .map(resource -> {
@@ -87,7 +87,7 @@ public class ResourceAnalyticsController {
                     .collect(Collectors.toList());
             analytics.put("recentlyAdded", recentlyAdded);
 
-            // 6. Average capacity per resource type
+            // Average capacity per resource type
             Map<String, Double> avgCapacityByType = new HashMap<>();
             List<Map<String, Object>> typeCapacityData = resourceRepository.findAll()
                     .stream()
@@ -107,7 +107,7 @@ public class ResourceAnalyticsController {
                     .collect(Collectors.toList());
             analytics.put("avgCapacityByType", typeCapacityData);
 
-            // 7. Active vs Inactive resources
+            // Active vs Inactive resources
             Map<String, Long> activeStatus = statusDistribution;
             analytics.put("activeResources", activeStatus.getOrDefault("ACTIVE", 0L));
             analytics.put("inactiveResources", activeStatus.getOrDefault("OUT_OF_SERVICE", 0L));

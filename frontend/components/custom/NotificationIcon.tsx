@@ -40,8 +40,8 @@ export const NotificationIcon = () => {
           </div>
           <DropdownMenuGroup>
             {!loading ? (
-              notifications.map((notification) => (
-                <DropdownMenuItem>
+              notifications.map((notification,index) => (
+                <DropdownMenuItem key={index}>
                   <NotificationBox
                     key={notification.id}
                     id={notification.id}

@@ -146,7 +146,7 @@ export const ViewResourcesTable = () => {
             }
         } catch (error) {
             console.error("Error deleting resource:", error)
-            toast.error("Failed to delete resource")
+            toast.error("You can not delete this Resource.")
         } finally {
             setIsDeleting(false)
         }

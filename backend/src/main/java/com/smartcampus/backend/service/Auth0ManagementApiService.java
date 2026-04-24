@@ -1,11 +1,14 @@
 package com.smartcampus.backend.service;
 
 // import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
 import com.smartcampus.backend.config.Auth0ManagementProperties;
@@ -68,6 +71,17 @@ public class Auth0ManagementApiService {
                 })
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
+                .onStatus(status -> !status.is2xxSuccessful(), 
+                        (request, response) -> {
+                            byte[] body_bytes = response.getBody().readAllBytes();
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new HttpClientErrorException(response.getStatusCode(), 
+                                    response.getStatusText(), response.getHeaders(), body_bytes, StandardCharsets.UTF_8);
+                            } else {
+                                throw new HttpServerErrorException(response.getStatusCode(), 
+                                    response.getStatusText(), response.getHeaders(), body_bytes, StandardCharsets.UTF_8);
+                            }
+                        })
                 .body(new ParameterizedTypeReference<List<Auth0UserDto>>() {
                 });
 
@@ -87,6 +101,17 @@ public class Auth0ManagementApiService {
                         .build(auth0UserId))
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
+                .onStatus(status -> !status.is2xxSuccessful(), 
+                        (request, response) -> {
+                            byte[] body_bytes = response.getBody().readAllBytes();
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new HttpClientErrorException(response.getStatusCode(), 
+                                    response.getStatusText(), response.getHeaders(), body_bytes, StandardCharsets.UTF_8);
+                            } else {
+                                throw new HttpServerErrorException(response.getStatusCode(), 
+                                    response.getStatusText(), response.getHeaders(), body_bytes, StandardCharsets.UTF_8);
+                            }
+                        })
                 .body(new ParameterizedTypeReference<List<Auth0RoleDto>>() {
                 });
 

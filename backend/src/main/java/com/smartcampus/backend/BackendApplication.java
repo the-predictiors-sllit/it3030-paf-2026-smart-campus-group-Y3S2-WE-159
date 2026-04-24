@@ -22,4 +22,6 @@ public class BackendApplication {
 		String message = "This is a Health Check";
 		return message;
 	}
+
+	
 }

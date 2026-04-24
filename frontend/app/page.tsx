@@ -1,74 +1,51 @@
-import { HomeAdminPageAccessBtn } from '@/components/custom/HomeAdminPageAccessBtn';
-import { HomeImageSlider } from '@/components/custom/HomeImageSlider';
-import { SERVER_API_URL } from '@/lib/api-client';
-import { auth0 } from '@/lib/auth0';
-import { redirect } from 'next/navigation';
+import { HomeAdminPageAccessBtn } from "@/components/custom/HomeAdminPageAccessBtn"
+import { HomeImageSlider } from "@/components/custom/HomeImageSlider"
+import { SERVER_API_URL } from "@/lib/api-client"
+import { auth0 } from "@/lib/auth0"
+import { redirect } from "next/navigation"
 
 type BackendProfileResponse = {
-  status: 'success';
+  status: "success"
   data: {
-    id: number | string;
-    name: string;
-    email: string;
-    role: string;
-  };
-};
+    id: number | string
+    name: string
+    email: string
+    role: string
+  }
+}
 
 const page = async () => {
-  const session = await auth0.getSession();
+  const session = await auth0.getSession()
   if (!session?.user) {
-    redirect('/auth/login')
+    redirect("/auth/login")
   }
 
-  let profile: BackendProfileResponse['data'] | null = null;
+  let profile: BackendProfileResponse["data"] | null = null
 
   try {
-    const { token } = await auth0.getAccessToken();
-    console.log(token)
+    const { token } = await auth0.getAccessToken()
+    console.log("getAccessToken " + token)
+    // console.log( "getAccessToken " + expiresAt )
 
     // Keep backend user record in sync with Auth0 identity.
     await fetch(`${SERVER_API_URL}/api/auth/register`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      cache: 'no-store',
-    });
-
-    const profileRes = await fetch(`${SERVER_API_URL}/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: 'no-store',
-    });
-
-    if (profileRes.ok) {
-      const body: BackendProfileResponse = await profileRes.json();
-      profile = body.data;
-    }
+      cache: "no-store",
+    })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '';
+    const errorMessage = error instanceof Error ? error.message : ""
 
-    const requiresReauth =
-      errorMessage.includes('AccessTokenError') ||
-      (errorMessage.includes('expired') && errorMessage.includes('refresh token'));
-
-    if (requiresReauth) {
-      redirect('/auth/login?returnTo=/');
-    }
-
-    console.error('Failed to load backend profile: ', error)
+    console.error("Failed to load backend profile: ", error)
   }
-
-
-  
 
   return (
     <main>
-      <HomeAdminPageAccessBtn/>
-      <HomeImageSlider/>
+      <HomeAdminPageAccessBtn />
+      <HomeImageSlider />
     </main>
 
     // <div>

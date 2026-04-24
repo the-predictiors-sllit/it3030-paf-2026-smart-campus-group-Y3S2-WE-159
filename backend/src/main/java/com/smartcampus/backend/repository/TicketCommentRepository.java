@@ -7,14 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Repository for the TicketComment entity.
+  Repository for the TicketComment entity.
  */
 @Repository
 public interface TicketCommentRepository extends JpaRepository<TicketComment, String> {
 
     /**
-     * All comments for a ticket, ordered oldest-first.
-     * This gives a natural conversation thread when displayed in the UI.
+     All comments for a ticket, ordered oldest-first.
+      This gives a natural conversation thread when displayed in the UI.
      */
     List<TicketComment> findByTicketIdOrderByCreatedAtAsc(String ticketId);
 

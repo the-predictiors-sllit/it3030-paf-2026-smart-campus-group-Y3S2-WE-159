@@ -1,8 +1,10 @@
 import { ManageUsers } from '@/components/custom/ManageUsers'
+import { auth0 } from '@/lib/auth0';
 
-const page = () => {
+const page = async () => {
+    const { token } = await auth0.getAccessToken();
   return (
-    <div className='min-h-screen'><ManageUsers/></div>
+    <div><ManageUsers token={token}/></div>
   )
 }
 
