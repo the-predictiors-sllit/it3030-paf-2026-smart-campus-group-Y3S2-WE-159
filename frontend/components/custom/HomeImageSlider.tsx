@@ -1,14 +1,17 @@
 "use client";
 import { motion } from "motion/react";
 import { ImagesSlider } from "../ui/images-slider";
+import classroom1 from "@/assets/classroom1.jpg";
+import proj1 from "@/assets/proj1.jpeg";
+import lib1 from "@/assets/lib1.jpeg";
+import lab1 from "@/assets/lab1.jpg";
 
 export const HomeImageSlider = () => {
     const images = [
-        "/classroom1.jpg",
-        "https://images.pexels.com/photos/36244514/pexels-photo-36244514.jpeg",
-        "https://images.pexels.com/photos/5515483/pexels-photo-5515483.jpeg", 
-        "https://images.pexels.com/photos/3747481/pexels-photo-3747481.jpeg", 
-        "https://images.pexels.com/photos/36279882/pexels-photo-36279882.jpeg", 
+        classroom1.src,
+        proj1.src,  
+        lib1.src, 
+        lab1.src, 
     ];
     return (
         <ImagesSlider className="h-[40rem] rounded-lg" images={images}>

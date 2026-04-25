@@ -50,19 +50,45 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const ADMIN_ONLY_PATHS = ["/admin", "/component"];
   const namespace = "https://smartcampus.api";
   const { user } = session;
-
+  
   // Safe fallback to empty array if roles is missing
   const roles = (user[`${namespace}/roles`] as string[]) ?? [];
   console.log("roles:", roles);
+  
+  // const ADMIN_ONLY_PATHS = ["/admin", "/component"];
+  // const isAdminPath = ADMIN_ONLY_PATHS.some((path) => pathname.startsWith(path));
 
-  const isAdminPath = ADMIN_ONLY_PATHS.some((path) => pathname.startsWith(path));
+  // if (isAdminPath && !roles.includes("ADMIN")) {
+  //   return NextResponse.redirect(new URL("/unauthorized", request.url));
+  // }
 
-  if (isAdminPath && !roles.includes("ADMIN")) {
+  const ADMIN_ONLY_PATHS = ["/admin/bookings", "/admin/resources", "/admin/users"]; 
+  const STAFF_PATHS = ["/admin/tickets"]; 
+
+
+
+  const isStrictAdminPath = ADMIN_ONLY_PATHS.some((path) => pathname.startsWith(path));
+  const isStaffPath = STAFF_PATHS.some((path) => pathname.startsWith(path));
+
+  // 1. Check Strict Admin Access
+  if (isStrictAdminPath && !roles.includes("ADMIN")) {
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
+
+  // 2. Check Staff (Admin or Technician) Access
+  if (isStaffPath) {
+    const hasAccess = roles.includes("ADMIN") || roles.includes("TECHNICIAN");
+    if (!hasAccess) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+  }
+
+
+
+
+
 
   return auth0.middleware(request);
 }
