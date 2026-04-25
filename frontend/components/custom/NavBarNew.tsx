@@ -23,15 +23,8 @@ import {
 import Link from "next/link"
 import { Logo } from "./Logo"
 import { DarkLight } from "./DarkLightBtn"
-import {
-  Avatar,
-  AvatarBadge,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarGroupCount,
-  AvatarImage,
-} from "@/components/ui/avatar"
 import { NotificationIcon } from "./NotificationIcon"
+import { UserCard_navbar } from "./UserCard_navbar"
 
 const pages = [
   {
@@ -80,7 +73,7 @@ const NavBarNew = () => {
           <div className="flex gap-5">
             <NotificationIcon />
             <DarkLight />
-            <UserProfile />
+            <UserCard_navbar />
           </div>
         </section>
 
@@ -100,12 +93,8 @@ export default NavBarNew
 
 export const UserProfile = () => {
   return (
-    <section className="flex-coll flex items-center gap-3">
-      <Avatar>
-        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
-      <span className="block lg:hidden">My Name</span>
+    <section className="flex items-center">
+      <UserCard_navbar />
     </section>
   )
 }

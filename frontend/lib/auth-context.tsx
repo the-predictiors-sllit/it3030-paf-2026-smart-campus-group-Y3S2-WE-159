@@ -6,8 +6,10 @@ import { UserRole, extractRolesFromToken, hasRole, hasAnyRole } from './roles';
 export interface AuthContextType {
   // User identification
   userId: string | null;
+  auth0UserId: string | null;
   name: string | null;
   email: string | null;
+  picture: string | null;
 
   // Role information
   roles: UserRole[];
@@ -29,6 +31,10 @@ type UserProfileData = {
   name: string;
   email: string;
   role: string;
+  picture?: string | null;
+  auth0UserId?: string | null;
+  auth0Name?: string | null;
+  auth0Email?: string | null;
 };
 
 interface ProfileResponse {
@@ -42,8 +48,10 @@ interface ProfileResponse {
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
+  const [auth0UserId, setAuth0UserId] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [picture, setPicture] = useState<string | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([UserRole.USER]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,8 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (active) {
           const profileData = data.data;
           setUserId(String(profileData.id));
-          setName(profileData.name);
-          setEmail(profileData.email);
+          setAuth0UserId(profileData.auth0UserId ?? null);
+          setName(profileData.auth0Name || profileData.name);
+          setEmail(profileData.auth0Email || profileData.email);
+          setPicture(profileData.picture ?? null);
 
           // Extract and set roles - first check the role from backend, then get from token
           // The backend should provide the role, but we can also extract from token if needed
@@ -99,8 +109,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value: AuthContextType = {
     userId,
+    auth0UserId,
     name,
     email,
+    picture,
     roles,
     primaryRole,
     loading,

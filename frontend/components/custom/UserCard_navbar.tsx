@@ -1,17 +1,19 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from '@/lib/auth-context';
 import { getRoleDisplayName } from '@/lib/roles';
 import { useMemo } from 'react';
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from '@/components/ui/button';
 import { BadgeCheck, EditIcon, LogOut } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
@@ -26,6 +28,7 @@ export const UserCard_navbar = () => {
     const {
         name,
         email,
+        picture,
         primaryRole,
         loading,
         error
@@ -37,9 +40,9 @@ export const UserCard_navbar = () => {
     const handleLogoutClick = () => {
         window.location.assign('/auth/logout?returnTo=%2Fauth%2Flogin');
     }
-    
-    let avatar_image = "https://images.pexels.com/photos/2103864/pexels-photo-2103864.jpeg"
-    let avatar_image_alt = name ?? "Unknown User";
+
+    const avatarImage = picture ?? "";
+    const avatarImageAlt = name ?? "Unknown User";
     const userName = name ?? "Unknown User";
     const userEmail = email ?? "unknown@university.edu";
     const userAccessLevel = primaryRole ? getRoleDisplayName(primaryRole) : "User";
@@ -59,20 +62,19 @@ export const UserCard_navbar = () => {
     }
 
     if (error) {
-        console.log(`Profile error: ${error}`)
         return <div className="text-sm text-red-500">!!!</div>;
     }
 
 
     return (
         <div className="flex items-center justify-center">
-            <HoverCard openDelay={100} closeDelay={200}>
-                <HoverCardTrigger>
-                    <div className="flex cursor-pointer items-center gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button type="button" className="flex cursor-pointer items-center gap-2">
                         <Avatar className="size-8">
                             <AvatarImage
-                                src={avatar_image}
-                                alt={avatar_image_alt}
+                                src={avatarImage}
+                                alt={avatarImageAlt}
                             />
                             <AvatarFallback>{avatarFallback}</AvatarFallback>
                         </Avatar>
@@ -82,15 +84,17 @@ export const UserCard_navbar = () => {
                             </p>
                             <p className="text-muted-foreground text-xs">{userEmail}</p>
                         </div>
-                    </div>
-                </HoverCardTrigger>
+                    </button>
+                </DropdownMenuTrigger>
 
-                <HoverCardContent className="mx-3">
+                <DropdownMenuContent align="end" className="w-72">
+                    <DropdownMenuLabel>Signed in as</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
                     <div className="flex space-x-2">
                         <Avatar className="size-10 shrink-0">
                             <AvatarImage
-                                src={avatar_image}
-                                alt={avatar_image_alt}
+                                src={avatarImage}
+                                alt={avatarImageAlt}
                             />
                             <AvatarFallback>{avatarFallback}</AvatarFallback>
                         </Avatar>
@@ -105,28 +109,19 @@ export const UserCard_navbar = () => {
                                 <BadgeCheck data-icon="inline-start" />
                                 {userAccessLevel}
                             </Badge>
-                            <div className='flex flex-row gap-3'>
-
-                            <Button variant={"link"} className=' text-[10px] p-0 m-0' onClick={handleProfileClick}><EditIcon/>Profile</Button>
-                            <Button
-                                variant={"link"}
-                                className=' text-[10px] p-0 m-0'
-                                onClick={handleLogoutClick}
-                            >
-                                <LogOut />
-                                Logout
-                            </Button>
-                            </div>
-                            {/* <div className="flex items-center gap-1">
-                                <CalendarIcon className="size-3.5 opacity-60" />
-                                <span className="text-muted-foreground text-xs leading-none">
-                                    Joined {joinedDate}
-                                </span>
-                            </div> */}
                         </div>
                     </div>
-                </HoverCardContent>
-            </HoverCard>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleProfileClick}>
+                        <EditIcon />
+                        Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
+                        <LogOut />
+                        Logout
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     )
 }

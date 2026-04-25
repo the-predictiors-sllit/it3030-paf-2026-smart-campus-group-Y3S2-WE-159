@@ -2,25 +2,23 @@ import { DotPattern } from "@/components/ui/dot-pattern"
 import { HexagonPattern } from "@/components/ui/hexagon-pattern"
 import {
   BellIcon,
-  RadiobuttonIcon
+  BackpackIcon
 } from "@radix-ui/react-icons"
 import { BookDownIcon, TicketIcon } from "lucide-react"
-import { BackgroundGradientAnimation } from "../ui/background-gradient-animation"
 import { BentoCard, BentoGrid } from "../ui/bento-grid"
 import { NotificationsAnimatedList } from "./NotificationsAnimatedList"
 
 
 const features = [
   {
-    Icon: RadiobuttonIcon,
-    name: "AI Chatbot",
-    description: "Engage in real-time conversations with our AI.",
-    href: "/ai",
-    cta: "Chat Now", // Fixed typo "Char"
+    Icon: BackpackIcon,
+    name: "Resources",
+    description: "Browse and access available campus resources.",
+    href: "/resources",
+    cta: "Open resources",
     background: (
-      // <img alt="" className="absolute -top-20 -right-20 opacity-60" />
-      <div className="absolute inset-0 z-0  [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]">
-        <BackgroundGradientAnimation size="100%"/>
+      <div className="absolute inset-0 z-0 opacity-90 [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]">
+        <HexagonPattern />
       </div>
     ),
     className: "lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4",
@@ -30,7 +28,7 @@ const features = [
     name: "My Bookings",
     description: "Manage all of your resource bookings in one place.",
     href: "/booking",
-    cta: "Learn more",
+    cta: "Open bookings",
     background: (
       <div className="absolute inset-0 z-0 opacity-90 [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]">
         <DotPattern />
@@ -44,7 +42,7 @@ const features = [
     name: "My Tickets",
     description: "Track and view all of your incident tickets.",
     href: "/tickets",
-    cta: "Learn more",
+    cta: "Open tickets",
     background: (
       <div className="absolute inset-0 z-0 opacity-90 [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]">
         <HexagonPattern />
@@ -57,7 +55,7 @@ const features = [
     name: "Notifications",
     description: "Stay updated with your latest alerts and activities.",
     href: "/notifications",
-    cta: "View all",
+    cta: "View all notifications",
     background: (
       <NotificationsAnimatedList className="absolute top-4 right-2 h-1/2 w-full scale-75 border-none [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] transition-all duration-300 ease-out group-hover:scale-90" />
     ),
