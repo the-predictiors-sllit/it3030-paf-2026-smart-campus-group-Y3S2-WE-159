@@ -28,13 +28,16 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    volumes:
+      - ./initialResourcesImage:/seed-resources:ro
     networks:
       - PAF_project_network
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 admin password123;
-      /usr/bin/mc mb myminio/incident-reports;
+      /usr/bin/mc mb --ignore-existing myminio/incident-reports;
       /usr/bin/mc anonymous set public myminio/incident-reports;
+      /usr/bin/mc cp --recursive /seed-resources/ myminio/incident-reports/resources/;
       exit 0;
       "
 
@@ -111,48 +114,48 @@ services:
       retries: 800
       start_period: 120s
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: smart_campus_frontend
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: smart_campus_frontend
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #     - /app/.next
 
-    # # this option will not update the host pc code
-    # develop:
-    #   watch:
-    #     - action: sync
-    #       path: ./frontend
-    #       target: /app
-    #       ignore:
-    #         - node_modules/
-    #         - .next/
-    environment:
-      # - DEBUG=true
-      - NEXT_PUBLIC_API_URL=http://localhost:8118
-      - INTERNAL_API_URL=http://backend:8080
-      - NODE_ENV=development
-      - HOSTNAME=0.0.0.0
-      # - CHOKIDAR_USEPOLLING=true
-      # - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_INTERVAL=50
-      - WATCHPACK_POLLING_INTERVAL=50
-      - NEXT_TELEMETRY_DISABLED=1
-    networks:
-      - PAF_project_network
-    depends_on:
-      backend:
-        # condition: service_healthy # Only starts frontend after backend passes healthcheck
-        condition: service_started # to fix the backend crashing issue
+  #   # # this option will not update the host pc code
+  #   # develop:
+  #   #   watch:
+  #   #     - action: sync
+  #   #       path: ./frontend
+  #   #       target: /app
+  #   #       ignore:
+  #   #         - node_modules/
+  #   #         - .next/
+  #   environment:
+  #     # - DEBUG=true
+  #     - NEXT_PUBLIC_API_URL=http://localhost:8118
+  #     - INTERNAL_API_URL=http://backend:8080
+  #     - NODE_ENV=development
+  #     - HOSTNAME=0.0.0.0
+  #     # - CHOKIDAR_USEPOLLING=true
+  #     # - WATCHPACK_POLLING=true
+  #     - CHOKIDAR_USEPOLLING=true
+  #     - WATCHPACK_POLLING=true
+  #     - CHOKIDAR_INTERVAL=50
+  #     - WATCHPACK_POLLING_INTERVAL=50
+  #     - NEXT_TELEMETRY_DISABLED=1
+  #   networks:
+  #     - PAF_project_network
+  #   depends_on:
+  #     backend:
+  #       # condition: service_healthy # Only starts frontend after backend passes healthcheck
+  #       condition: service_started # to fix the backend crashing issue
 
 
   # ai_python:
