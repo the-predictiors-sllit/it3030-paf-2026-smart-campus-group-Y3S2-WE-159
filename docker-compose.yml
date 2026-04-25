@@ -28,13 +28,16 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    volumes:
+      - ./initialResourcesImage:/seed-resources:ro
     networks:
       - PAF_project_network
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 admin password123;
-      /usr/bin/mc mb myminio/incident-reports;
+      /usr/bin/mc mb --ignore-existing myminio/incident-reports;
       /usr/bin/mc anonymous set public myminio/incident-reports;
+      /usr/bin/mc cp --recursive /seed-resources/ myminio/incident-reports/resources/;
       exit 0;
       "
 
