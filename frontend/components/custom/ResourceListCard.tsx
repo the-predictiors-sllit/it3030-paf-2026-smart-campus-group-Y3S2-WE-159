@@ -1,22 +1,24 @@
-import Link from "next/link";
-import { ImageOff, MapPin, Users } from "lucide-react";
+'use client'
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { ImageOff, MapPin, Users } from 'lucide-react'
+import Link from 'next/link'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 type ResourceListCardProps = {
-  id: string;
-  name: string;
-  typeLabel: string;
-  statusLabel: string;
-  isActive: boolean;
-  capacity: number | null;
-  location: string;
-  imageUrl?: string;
-  hasImageError: boolean;
-  onImageError: () => void;
-};
+  id: string
+  name: string
+  typeLabel: string
+  statusLabel: string
+  isActive: boolean
+  capacity: number | null
+  location: string
+  imageUrl?: string
+  hasImageError: boolean
+  onImageError?: () => void
+}
 
 export function ResourceListCard({
   id,
@@ -52,7 +54,7 @@ export function ResourceListCard({
         <div className="space-y-3 pl-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{typeLabel}</Badge>
-            <Badge variant={isActive ? "default" : "destructive"}>{statusLabel}</Badge>
+            <Badge variant={isActive ? 'default' : 'destructive'}>{statusLabel}</Badge>
           </div>
 
           <div className="space-y-1">
@@ -62,21 +64,19 @@ export function ResourceListCard({
 
           <div className="text-muted-foreground flex items-start gap-2 text-sm">
             <MapPin className="mt-0.5 size-4 shrink-0" />
-            <span>{location || "Location not specified"}</span>
+            <span>{location || 'Location not specified'}</span>
           </div>
 
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <Users className="size-4 shrink-0" />
-            <span>Capacity: {capacity ?? "N/A"}</span>
+            <span>Capacity: {capacity ?? 'N/A'}</span>
           </div>
 
           <Button asChild variant="outline" size="sm">
             <Link href={`/resources/${id}`}>View Details</Link>
           </Button>
         </div>
-
-        
       </div>
     </Card>
-  );
+  )
 }

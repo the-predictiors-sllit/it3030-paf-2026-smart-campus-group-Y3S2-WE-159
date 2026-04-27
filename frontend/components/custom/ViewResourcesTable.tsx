@@ -87,6 +87,28 @@ export const ViewResourcesTable = () => {
     const [resourceToDelete, setResourceToDelete] = useState<Resource | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
 
+    const getDeleteResourceErrorMessage = (status: number, rawMessage: string) => {
+        const normalized = rawMessage.toLowerCase()
+        const looksLikeForeignKeyIssue =
+            status === 409 ||
+            /foreign key|constraint|integrity|reference|referential|violat/.test(normalized) ||
+            (status === 500 && !normalized)
+
+        if (looksLikeForeignKeyIssue) {
+            return "Cannot delete this resource because it is currently used by other records (for example bookings or tickets)."
+        }
+
+        if (status === 404) {
+            return "Resource not found. It may have already been deleted."
+        }
+
+        if (status === 401 || status === 403) {
+            return "You do not have permission to delete this resource."
+        }
+
+        return rawMessage || "Failed to delete resource"
+    }
+
     // Fetch resources
     const fetchResources = async () => {
         try {
@@ -141,12 +163,31 @@ export const ViewResourcesTable = () => {
                 setResourceToDelete(null)
                 fetchResources()
             } else {
-                const result = await response.json()
-                toast.error(result.error?.message || "Failed to delete resource")
+                let rawMessage = ""
+
+                try {
+                    const text = await response.text()
+                    if (text) {
+                        try {
+                            const parsed = JSON.parse(text)
+                            rawMessage =
+                                parsed?.error?.message ||
+                                parsed?.message ||
+                                parsed?.error ||
+                                text
+                        } catch {
+                            rawMessage = text
+                        }
+                    }
+                } catch {
+                    rawMessage = ""
+                }
+
+                toast.error(getDeleteResourceErrorMessage(response.status, rawMessage))
             }
         } catch (error) {
             console.error("Error deleting resource:", error)
-            toast.error("You can not delete this Resource.")
+            toast.error("Failed to delete resource. Please try again.")
         } finally {
             setIsDeleting(false)
         }

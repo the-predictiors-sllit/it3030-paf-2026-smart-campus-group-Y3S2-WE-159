@@ -1,21 +1,45 @@
-"use client"
-import { ResourceView } from '@/components/custom/ResourceView';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useParams, useRouter } from 'next/navigation';
-import { AlertTriangle, CalendarCheck, ArrowLeft } from 'lucide-react';
+import Link from 'next/link'
+import { ResourceView } from '@/components/custom/ResourceView'
+import { fetchFromInternalApi } from '@/lib/server-api'
+import { AlertTriangle, CalendarCheck } from 'lucide-react'
 
-const page = () => {
-  const params = useParams();
-  const id = params.id as string;
-  const router = useRouter();
+interface AvailabilityWindow {
+  day: string
+  startTime: string
+  endTime: string
+}
 
-  const handleBookingClick = () => {
-    router.push(`/booking/${id}`)
-  }
-  const handleIncidentTicketClick = () => {
-    router.push(`/tickets/${id}`)
-  }
+interface ResourceData {
+  id: string
+  name: string
+  type: string
+  capacity: number | null
+  location: string
+  status: string
+  description: string
+  imageUrl?: string
+  availabilityWindows: AvailabilityWindow[]
+  createdAt: string
+}
+
+interface ResourceApiResponse {
+  data: ResourceData
+  status: string
+  error: string | null
+}
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const response = await fetchFromInternalApi<ResourceApiResponse>(
+    `/api/resources/${encodeURIComponent(id)}`,
+    { next: { revalidate: 60 } }
+  )
+  const initialResource =
+    response?.status === 'success' ? response.data : null
 
   return (
     <main className="min-h-screen bg-background p-5">
@@ -26,7 +50,7 @@ const page = () => {
 
           {/* Main content */}
           <div className="flex-1 min-w-0">
-            <ResourceView id={id} />
+            <ResourceView id={id} initialResource={initialResource} />
           </div>
 
           {/* Sticky sidebar */}
@@ -47,8 +71,8 @@ const page = () => {
               <div className="p-4 space-y-3">
 
                 {/* Book Now — primary */}
-                <button
-                  onClick={handleBookingClick}
+                <Link
+                  href={`/booking/${id}`}
                   className="group w-full rounded-lg bg-primary px-4 py-3.5 text-left transition-all hover:bg-primary/90 active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-3">
@@ -60,11 +84,11 @@ const page = () => {
                       <p className="text-[11px] text-primary-foreground/60 mt-0.5">Reserve this resource</p>
                     </div>
                   </div>
-                </button>
+                </Link>
 
                 {/* Incident Ticket — secondary */}
-                <button
-                  onClick={handleIncidentTicketClick}
+                <Link
+                  href={`/tickets/${id}`}
                   className="group w-full rounded-lg border border-border/60 bg-background px-4 py-3.5 text-left transition-all hover:bg-muted/60 active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-3">
@@ -76,7 +100,7 @@ const page = () => {
                       <p className="text-[11px] text-muted-foreground mt-0.5">Report an issue</p>
                     </div>
                   </div>
-                </button>
+                </Link>
               </div>
 
               {/* Footer hint */}
@@ -93,5 +117,3 @@ const page = () => {
     </main>
   )
 }
-
-export default page

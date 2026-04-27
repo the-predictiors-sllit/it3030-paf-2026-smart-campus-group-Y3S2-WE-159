@@ -1,27 +1,30 @@
-"use client"
-import { AddComments } from '@/components/custom/AddComments';
-import { TicketPreview } from '@/components/custom/TicketPreview';
-import { Button } from '@/components/ui/button';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link'
+import { AddComments } from '@/components/custom/AddComments'
+import { TicketPreview } from '@/components/custom/TicketPreview'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 
-const page = () => {
-    const params = useParams();
-    const router = useRouter();
-    const id = params.id as string;
+export default async function Page({
+    params,
+}: {
+    params: Promise<{ id: string }>
+}) {
+        const { id } = await params
     
     return (
         <main className="space-y-6 p-5">
             {/* Navigation */}
             <div className="flex items-center gap-2">
-                <Button 
-                    variant="ghost" 
+                                <Button
+                                        asChild
+                                        variant="ghost"
                     size="sm"
-                    onClick={() => router.back()}
                     className="gap-2"
                 >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
+                                        <Link href="/tickets/myticket">
+                                            <ArrowLeft className="h-4 w-4" />
+                                            Back
+                                        </Link>
                 </Button>
             </div>
 
@@ -40,5 +43,3 @@ const page = () => {
         </main>
     )
 }
-
-export default page

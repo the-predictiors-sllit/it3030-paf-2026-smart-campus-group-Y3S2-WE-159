@@ -16,6 +16,7 @@ import { useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheck, EditIcon, LogOut } from "lucide-react";
 import { useRouter } from 'next/navigation';
+import { Spinner } from "../ui/spinner";
 
 function initialsFromName(name: string) {
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -62,7 +63,7 @@ export const UserCard_navbar = () => {
     }
 
     if (error) {
-        return <div className="text-sm text-red-500">!!!</div>;
+        return <div className="text-sm "><Spinner/></div>;
     }
 
 

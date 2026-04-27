@@ -1,4 +1,3 @@
-"use client"
 import MarkdownPreview from "@/components/custom/MarkdownPreview"
 import {
   Card,
@@ -9,14 +8,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNotificationDate } from "@/lib/formatDateTime"
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-
-const title = "Smart Campus: Incident Report"
-const ReferenceId = "12222"
-const datetime = "2026-03-21 11:00:00.000"
-const description = ``
+import { fetchFromInternalApi } from "@/lib/server-api"
 
 interface NotificationProps {
   id: string
@@ -34,56 +26,42 @@ interface ApiResponseProps {
   error: string | null
 }
 
-const page = () => {
-  const [loading, setLoading] = useState(true)
-  const params = useParams()
-  const id = params.id as string
-
-  const [notification, setNotification] = useState<NotificationProps | null>(
-    null
+async function getNotification(id: string) {
+  const response = await fetchFromInternalApi<ApiResponseProps>(
+    `/api/notifications/${encodeURIComponent(id)}`,
+    { next: { revalidate: 30 } }
   )
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // const token = "token"
+  if (!response || response.status !== "success") {
+    return null
+  }
 
-      try {
-        const response = await fetch(
-          `/api/notifications/${encodeURIComponent(id)}`,
-          {
-            method: "GET",
-          }
-        )
+  return response.data
+}
 
-        if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`)
-        }
-        const result: ApiResponseProps = await response.json()
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const notification = await getNotification(id)
 
-        if (result.status === "success") {
-          setNotification(result.data)
-        }
-      } catch (error) {
-        toast.warning("Something went wrong!")
-        console.error("Failed to fetch notification:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [id])
-
-  if (loading) {
+  if (!notification) {
     return (
       <div className="m-5">
         <Card className="shadow-lg">
           <CardHeader>
-            <Skeleton className="h-5 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
+            <CardTitle className="mb-2 text-2xl font-bold">
+              Notification not found
+            </CardTitle>
+            <p className="text-sm opacity-50">
+              Unable to load the selected notification.
+            </p>
           </CardHeader>
           <Separator />
           <CardContent>
-            <Skeleton className="aspect-video w-full" />
+            <Skeleton className="h-24 w-full" />
           </CardContent>
         </Card>
       </div>
@@ -94,22 +72,20 @@ const page = () => {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="mb-2 text-2xl font-bold">
-            {notification?.title}
+            {notification.title}
           </CardTitle>
           <p className="text-sm opacity-50">
-            Reference Id - {notification?.referenceId}{" "}
+            Reference Id - {notification.referenceId}{" "}
           </p>
           <p className="text-sm opacity-50">
-            Created at - {formatNotificationDate(notification?.createdAt)}{" "}
+            Created at - {formatNotificationDate(notification.createdAt)}{" "}
           </p>
         </CardHeader>
         <Separator />
         <CardContent>
-          <MarkdownPreview content={notification?.message || ""} />
+          <MarkdownPreview content={notification.message || ""} />
         </CardContent>
       </Card>
     </div>
   )
 }
-
-export default page
