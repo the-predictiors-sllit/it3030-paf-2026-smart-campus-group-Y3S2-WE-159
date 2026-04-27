@@ -52,12 +52,27 @@ interface ApiResponseProps {
   error: string | null
 }
 
-export const ResourceView = ({ id }: { id: string }) => {
-  const [resource, setResource] = useState<ResourcesData | null>(null)
-  const [loading, setLoading] = useState(true)
+export const ResourceView = ({
+  id,
+  initialResource,
+}: {
+  id: string
+  initialResource?: ResourcesData | null
+}) => {
+  const [resource, setResource] = useState<ResourcesData | null>(
+    initialResource ?? null
+  )
+  const [loading, setLoading] = useState(!initialResource)
   const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
+    if (initialResource) {
+      setResource(initialResource)
+      setImageError(false)
+      setLoading(false)
+      return
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch(
@@ -80,7 +95,7 @@ export const ResourceView = ({ id }: { id: string }) => {
       }
     }
     fetchData()
-  }, [id])
+  }, [id, initialResource])
 
   if (loading) {
     return (

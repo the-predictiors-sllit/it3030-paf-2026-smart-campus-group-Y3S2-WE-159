@@ -64,8 +64,8 @@ export async function proxy(request: NextRequest) {
   //   return NextResponse.redirect(new URL("/unauthorized", request.url));
   // }
 
-  const ADMIN_ONLY_PATHS = ["/admin/bookings", "/admin/resources", "/admin/users"]; 
-  const STAFF_PATHS = ["/admin/tickets"]; 
+  const ADMIN_ONLY_PATHS = ["/admin/bookings", "/admin/resources", "/admin/users","/admin"]; 
+  const STAFF_PATHS = ["/admin/tickets","/admin"]; 
 
 
 

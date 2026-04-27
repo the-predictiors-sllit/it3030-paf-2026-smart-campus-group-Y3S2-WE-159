@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react'
 
 import { Button } from "@/components/ui/button"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,6 +35,7 @@ import { Input } from '../ui/input'
 import { EmptyData } from './EmptyData'
 import { LoadingData } from './LoadingData'
 import { Separator } from '../ui/separator'
+import { Trash2 } from "lucide-react"
 
 
 interface ResourceSummary {
@@ -83,6 +94,9 @@ export const MyTickets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [priorityFilter, setPriorityFilter] = useState<string>("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState<TicketResponseData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const router = useRouter();
 
@@ -141,6 +155,68 @@ export const MyTickets = () => {
   if (loading) return <div><LoadingData /></div>;
 
   const hasFilters = searchTerm || statusFilter || priorityFilter;
+
+  const getDeleteTicketErrorMessage = (status: number, rawMessage: string) => {
+    if (status === 403) {
+      return "You are not allowed to delete this ticket with your current role.";
+    }
+
+    if (status === 404) {
+      return "Ticket not found. It may have already been deleted.";
+    }
+
+    if (status === 401) {
+      return "Please sign in again and try deleting the ticket.";
+    }
+
+    return rawMessage || "Failed to delete ticket.";
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticketToDelete) return;
+
+    try {
+      setIsDeleting(true);
+
+      const response = await fetch(`/api/tickets/${encodeURIComponent(ticketToDelete.id)}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok || response.status === 204) {
+        setTickets((prev) => prev.filter((t) => t.id !== ticketToDelete.id));
+        toast.success("Ticket deleted successfully.");
+        setIsDeleteDialogOpen(false);
+        setTicketToDelete(null);
+        return;
+      }
+
+      let rawMessage = "";
+      try {
+        const text = await response.text();
+        if (text) {
+          try {
+            const parsed = JSON.parse(text);
+            rawMessage =
+              parsed?.error?.message ||
+              parsed?.message ||
+              parsed?.error ||
+              text;
+          } catch {
+            rawMessage = text;
+          }
+        }
+      } catch {
+        rawMessage = "";
+      }
+
+      toast.error(getDeleteTicketErrorMessage(response.status, rawMessage));
+    } catch (error) {
+      console.error("Failed to delete ticket:", error);
+      toast.error("Failed to delete ticket. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <main className="space-y-6">
@@ -330,6 +406,20 @@ export const MyTickets = () => {
                       disabled={!ticket.resource}>
                       View Resource
                     </Button>
+                    {ticket.status === "OPEN" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                        onClick={() => {
+                          setTicketToDelete(ticket);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -337,6 +427,27 @@ export const MyTickets = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Ticket</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete ticket "{ticketToDelete?.id}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={handleDeleteTicket}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete Ticket"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   )
 }
