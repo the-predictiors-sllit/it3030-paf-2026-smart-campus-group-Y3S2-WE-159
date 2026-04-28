@@ -127,7 +127,10 @@ export function ResourcesClient({
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false
-      return
+      // If the server provided initial resources, skip the first fetch to avoid
+      // an unnecessary network request. If `initialResources` is empty, allow
+      // the effect to run so the client fetches real data (fixes blank page).
+      if (initialResources && initialResources.length > 0) return
     }
 
     const fetchResources = async () => {

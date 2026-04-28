@@ -4,6 +4,20 @@ IT3030 – Programming Applications and Frameworks
 
 
 
+
+```bash
+docker-compose -f docker-compose.yml up --build
+docker-compose -f docker-compose.production.yml up --build
+```
+
+install ollama on your device
+```bash
+ollama pull qwen3.5:2b-q8_0
+```
+
+
+
+
 ## Dev container
 01. Press Ctrl + Shift + P (Windows/Linux) or Cmd + Shift + P (Mac).
 02. Type "Dev Containers: Reopen in Container".

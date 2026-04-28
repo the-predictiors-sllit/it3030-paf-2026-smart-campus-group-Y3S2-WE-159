@@ -115,53 +115,26 @@ services:
       start_period: 120s
 
 
-
-# development ------------------------------------------
-  frontend:
+# production ---------------------------------
+  frontend_build:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    container_name: smart_campus_frontend
-    ports:
-      - "3000:3000"
+      dockerfile: Dockerfile.build
+    image: smart_campus_frontend_build_image
+    container_name: smart_campus_frontend_build_container
     env_file:
       - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
-
-    # # this option will not update the host pc code
-    # develop:
-    #   watch:
-    #     - action: sync
-    #       path: ./frontend
-    #       target: /app
-    #       ignore:
-    #         - node_modules/
-    #         - .next/
     environment:
-      # - DEBUG=true
       - NEXT_PUBLIC_API_URL=http://localhost:8118
       - INTERNAL_API_URL=http://backend:8080
-      - NODE_ENV=development
       - HOSTNAME=0.0.0.0
-      # - CHOKIDAR_USEPOLLING=true
-      # - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_INTERVAL=50
-      - WATCHPACK_POLLING_INTERVAL=50
-      - NEXT_TELEMETRY_DISABLED=1
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
     networks:
       - PAF_project_network
-    depends_on:
-      backend:
-        # condition: service_healthy # Only starts frontend after backend passes healthcheck
-        condition: service_started # to fix the backend crashing issue
-
 
   ai_python:
     build: 

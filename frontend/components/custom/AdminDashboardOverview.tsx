@@ -392,7 +392,7 @@ export const AdminDashboardOverview = () => {
                   outerRadius={90}
                   innerRadius={44}
                   paddingAngle={4}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                 >
                   {resourceTypeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
