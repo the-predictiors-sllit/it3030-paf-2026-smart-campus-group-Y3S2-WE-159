@@ -117,12 +117,16 @@ export const BookingForm = ({ id }: { id: string }) => {
 
         try {
           const errorBody = await response.json()
-          message = errorBody?.error?.message || message
+          message =
+            errorBody?.error?.message ||
+            errorBody?.message ||
+            errorBody?.detail ||
+            message
         } catch {
           // Keep fallback message when response body is not JSON.
         }
 
-        // throw new Error(message);
+        throw new Error(message)
       }
 
       toast.success("Booking created successfully!")

@@ -186,7 +186,7 @@ export const ResourceView = ({
       <div className="grid gap-6 lg:grid-cols-3">
 
         {/* Details Card */}
-        <Card className="lg:col-span-2 border-border/60 shadow-sm">
+        <Card className="lg:col-span-3 border-border/60 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold">Resource Details</CardTitle>
             <CardDescription className="text-xs">
@@ -243,7 +243,7 @@ export const ResourceView = ({
         </Card>
 
         {/* Preview Card */}
-        <Card className="border-border/60 shadow-sm">
+        <Card className="border-border/60 shadow-sm lg:col-span-3">
           <CardHeader className="pb-0">
             <CardTitle className="text-base font-semibold">Preview</CardTitle>
           </CardHeader>
