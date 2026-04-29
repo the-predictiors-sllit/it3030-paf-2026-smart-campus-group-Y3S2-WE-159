@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/bookings/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/bookings").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/bookings/*/status").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/bookings/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bookings/*").authenticated()
 
                 .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/*", "/api/resources/*/availability").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/resources").hasRole("ADMIN")
@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tickets/*", "/api/tickets/*/comments").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/tickets").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/tickets/*").hasAnyRole("ADMIN", "TECHNICIAN")
-                .requestMatchers(HttpMethod.DELETE, "/api/tickets/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/tickets/*").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/tickets/*/comments").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/tickets/*/comments/*").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/tickets/*/comments/*").authenticated()

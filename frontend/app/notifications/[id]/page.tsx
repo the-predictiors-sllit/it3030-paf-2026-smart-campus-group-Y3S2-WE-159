@@ -7,8 +7,9 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SERVER_API_URL } from "@/lib/api-client"
+import { auth0 } from "@/lib/auth0"
 import { formatNotificationDate } from "@/lib/formatDateTime"
-import { fetchFromInternalApi } from "@/lib/server-api"
 
 interface NotificationProps {
   id: string
@@ -16,27 +17,49 @@ interface NotificationProps {
   title: string
   message: string
   referenceId: string
-  read: string
+  read: boolean
   createdAt: string
 }
 
 interface ApiResponseProps {
-  data: NotificationProps
+  data: NotificationProps | null
   status: string
-  error: string | null
+  error: {
+    code: string
+    message: string
+  } | null
 }
 
 async function getNotification(id: string) {
-  const response = await fetchFromInternalApi<ApiResponseProps>(
-    `/api/notifications/${encodeURIComponent(id)}`,
-    { next: { revalidate: 30 } }
-  )
+  const session = await auth0.getSession()
 
-  if (!response || response.status !== "success") {
+  if (!session?.user) {
     return null
   }
 
-  return response.data
+  const { token } = await auth0.getAccessToken()
+  const response = await fetch(
+    `${SERVER_API_URL}/api/notifications/${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    }
+  )
+
+  if (!response.ok) {
+    return null
+  }
+
+  const result = (await response.json()) as ApiResponseProps
+
+  if (result.status !== "success" || !result.data) {
+    return null
+  }
+
+  return result.data
 }
 
 export default async function Page({
