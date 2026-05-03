@@ -4,6 +4,12 @@
 
 Smart Campus Hub is a full-stack campus management platform for handling bookings, tickets, resources, notifications, and AI-assisted workflows.
 
+
+>⚠️ Known Issues
+>403 Forbidden Error (Campus Networks)
+>
+>If you encounter a 403 Forbidden error while pulling Docker images, it is likely due to security restrictions on the campus network. Some institutional firewalls block certain container registries. Please switch to a different network.
+
 It is split into three main application areas:
 
 - `frontend`: Next.js app for the user interface and API proxying
