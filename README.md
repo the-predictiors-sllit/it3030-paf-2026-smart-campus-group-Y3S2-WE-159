@@ -14,7 +14,7 @@ It is split into three main application areas:
 
 - `frontend`: Next.js app for the user interface and API proxying
 - `backend`: Spring Boot service that exposes the main REST API
-- `ai_python`: Python service that connects the app to Ollama-based AI workflows
+- `ai_python`: A Python-based service integrating LangGraph for Ollama-driven AI workflows
 
 The stack also uses SQL Server for persistence and MinIO for storing incident report assets.
 
